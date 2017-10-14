@@ -8,8 +8,6 @@ Packet::Packet(int frameNumber, char* data) {
 	this->data = new char(dataSize);
 	this->checkSum = new char(1);
 
-	std::cout << /*i << "??" << */dataSize << std::endl;
-
 	for (int i = 0; i < dataSize; i++) {
 		this->data[i] = data[i];
 	}

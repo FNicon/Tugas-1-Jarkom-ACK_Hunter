@@ -14,8 +14,8 @@ int main() {
 	Packet packetB(packetA);
 	Packet packetC = packetA;
 
-	std::cout << packetA.getPacket() << std::endl;
-	std::cout << packetB.getPacket() << std::endl;
-	std::cout << packetC.getPacket() << std::endl;
+	packetA.printMsg();
+	packetB.printMsg();
+	packetC.printMsg();
 	return 0;
 }

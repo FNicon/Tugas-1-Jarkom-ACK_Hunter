@@ -27,7 +27,8 @@ public:
 	void setChecksum(char checkSum);
 	char getChecksum();
 
-	char* getPacket();
+	char* getMsg();
+	void printMsg();
 };
 
 #endif

@@ -73,7 +73,7 @@ int Packet::getSize() {
 	return dataSize;
 }
 
-char* Packet::getPacket() {
+char* Packet::getMsg() {
 	char* message = new char(1 + 4 + 1+ dataSize + 1 + 1);
 	if (frameNumber > 999) {
 		sprintf(message,"%d%d", SOH, frameNumber);
@@ -88,4 +88,8 @@ char* Packet::getPacket() {
 	sprintf(message, "%s%d%s%d%s", message, STX, data, ETX, "0");
 
 	return message;
+}
+
+void Packet::printMsg() {
+	std::cout << this->getMsg() << std::endl;
 }

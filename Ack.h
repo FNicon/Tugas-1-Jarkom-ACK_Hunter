@@ -12,9 +12,7 @@ private:
 
 public:
 	Ack(char* receivedFrame);
-	Ack(const Ack& copy);
-	Ack& operator=(const Ack& copy);
-	~Ack();
+	Ack(char* receivedFrame, int sequence);
 
 	char getStatus();
 

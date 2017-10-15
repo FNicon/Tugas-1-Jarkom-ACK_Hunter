@@ -8,7 +8,7 @@ private:
 	int frameNumber;
 	int dataSize;
 	char* data;
-	char* checkSum;
+	char checkSum;
 
 public:
 	Packet(int frameNumber, char* data);

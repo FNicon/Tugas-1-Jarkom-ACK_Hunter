@@ -5,23 +5,18 @@
 Packet::Packet(int frameNumber, char* data) {
 	this->frameNumber = frameNumber;
 	this->dataSize = strlen(data);
-	this->data = new char(dataSize);
-	this->checkSum = new char(1);
-
+	this->data = new char[dataSize];
+	this->checkSum = '?';
 	for (int i = 0; i < dataSize; i++) {
 		this->data[i] = data[i];
 	}
-
-	(*checkSum) = '0';
-
 }
 
 Packet::Packet(const Packet& packet) {
 	this->frameNumber = packet.frameNumber;
-	this->dataSize = sizeof(packet.data)/sizeof(packet.data[0]);
+	this->dataSize = strlen(packet.data);//sizeof(packet.data)/sizeof(packet.data[0]);
 	this->data = new char(dataSize);
-	this->checkSum = new char(1);
-	*(this->checkSum) = *(packet.checkSum);
+	(this->checkSum) = (packet.checkSum);
 
 	for (int i = 0; i < dataSize; i++) {
 		this->data[i] = packet.data[i];
@@ -33,9 +28,7 @@ Packet& Packet::operator=(const Packet& packet) {
 	this->dataSize = strlen(packet.data);
 	delete [] data;
 	this->data = new char(dataSize);
-	delete [] checkSum;
-	this->checkSum = new char(1);
-	*(this->checkSum) = *(packet.checkSum);
+	(this->checkSum) = (packet.checkSum);
 
 	for (int i = 0; i < dataSize; i++) {
 		data[i] = packet.data[i];
@@ -46,7 +39,6 @@ Packet& Packet::operator=(const Packet& packet) {
 
 Packet::~Packet() {
 	delete [] data;
-	delete [] checkSum;
 }
 
 void Packet::setFrameNumber(int number) {
@@ -74,7 +66,7 @@ int Packet::getSize() {
 }
 
 char* Packet::getMsg() {
-	char* message = new char(1 + 4 + 1+ dataSize + 1 + 1);
+	char* message = new char[1 + 4 + 1+ dataSize + 1 + 1];
 	if (frameNumber > 999) {
 		sprintf(message,"%c%d", SOH, frameNumber);
 	} else if (frameNumber > 99) {

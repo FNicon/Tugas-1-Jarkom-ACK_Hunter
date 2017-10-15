@@ -9,12 +9,33 @@ Simple udp server
 
 #define BUFFER_LENGTH 512//Max length of buffer
 #define PORT 8888 //The port on which to listen for incoming data
-
+char buildCheckSum(char* inputString) {
+	char checkSum;
+	checkSum = 0;
+	int i;
+	for (i=0;i<strlen(inputString);i++) {
+		printf("%x \n", inputString[i]);
+		printHextoBit(inputString[i]);
+		checkSum = checkSum + inputString[i];
+	}
+	return(checkSum);
+}
 void die(char *errorMessage) {
 	perror(errorMessage);
 	exit(1);
 }
+char* buildMessage() {
+	char check;
+	check = buildCheckSum(0x6+atoi(sequenceNumber)+advertised);
+	return(0x6+atoi(sequenceNumber)+advertised+check);
+}
 int main(void) {
+	struct ackSent {
+		char ack;
+		int nextSequence;
+		char advertised;
+		char checksum;
+	}
 	struct sockaddr_in serverAddress;
 	struct sockaddr_in clientAddress;
 	int socketConnector;

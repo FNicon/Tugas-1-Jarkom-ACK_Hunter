@@ -30,11 +30,24 @@ char buildCheckSum(char* inputString) {
 	}
 	return(checkSum);
 }
+char* buildMessage() {
+	char check;
+	check = buildCheckSum(0x1+atoi(sequenceNumber)+stx+data+etx);
+	return(0x1+atoi(sequenceNumber)+stx+data+etx+check);
+}
 void die(char *errorMessage) {
 	perror(errorMessage);
 	exit(1);
 }
 int main(void) {
+	struct messageSent {
+		char soh;
+		int sequenceNumber;
+		char stx;
+		char data;
+		char etx;
+		char checksum;
+	}
 	struct sockaddr_in clientAddress;
 	char testSum;
 	int socketConnector;

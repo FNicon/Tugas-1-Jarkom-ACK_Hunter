@@ -1,6 +1,5 @@
 /*
     Simple udp client
-    Taken from: http://www.binarytides.com/programming-udp-sockets-c-linux/
 */
 #include<stdio.h> //printf
 #include<string.h> //memset
@@ -9,7 +8,7 @@
 #include<sys/socket.h>
  
 #define SERVER "127.0.0.1"
-#define BUFLEN 10  //Max length of buffer
+#define BUFLEN 512  //Max length of buffer
 #define PORT 8888   //The port on which to send data
  
 void die(char *s)

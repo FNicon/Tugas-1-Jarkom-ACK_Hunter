@@ -1,0 +1,5 @@
+terminal sender:
+./sendfile test_file.txt 5 256 127.0.0.1 8888
+
+terminal receiver:
+./recvfile recv_file.txt 5 256 8888

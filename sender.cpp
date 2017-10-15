@@ -31,7 +31,7 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	}
 }
 
-void sendData(int thisSocket, char* data, int windowSize, int payloadSize) {
+void sendData(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize) {
 	bool acked = false;
 
 	int windowPtr = 0;
@@ -41,23 +41,24 @@ void sendData(int thisSocket, char* data, int windowSize, int payloadSize) {
 	int maxSequence = windowSize * 2;
 	int lastAckRecv;
 
-	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < strlen(data)) {
+	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
 		if (sequence >= maxSequence) {
 			sequence = 0;
 		}
-		std::cout << "panjang data: " << strlen(data) << std::endl;
+		std::cout << "Mengirim paket ke-" << sequence << std::endl;
 		// std::cout << "Curent buffer pointer: " << bufferPtr << std::endl;
 
-		char* payload = new char(payloadSize);
-		for (int j = 0; j < payloadSize && j < strlen(data); j++) {
+		char payload[payloadSize];
+		for (int j = 0; j < payloadSize && j < dataLength; j++) {
 			payload[j] = data[bufferPtr];
 			bufferPtr++;
 		}
+
+		std::cout << "Isi paket: " << payload << std::endl;
 		// std::cout << "Current data: " << payload << std::endl;
 		// std::cout << "Current window pointer: " << windowPtr << std::endl << std::endl;
 		sendSinglePacket(thisSocket, *(new Packet(sequence, payload)));
-		// sleep(1);
-		delete [] payload;
+		sleep(1);
 
 		windowPtr += payloadSize;
 		sequence++;
@@ -82,7 +83,7 @@ int main(int argc, char* argv[]) {
 		const int destPort = atoi(argv[5]);
 		std:: cout << fileName << " " << windowSize << " " << bufferSize << " " << address << " " << destPort << std::endl;
 
-		char* buffer = new char(bufferSize);
+		char buffer[bufferSize];
 
 		int thisSocket;
 		int socketSize = sizeof(otherAddress);
@@ -121,14 +122,14 @@ int main(int argc, char* argv[]) {
 	    if (sendto(thisSocket, "abcde", 5, 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
 			std::cout << "Failed" << std::endl;
 		}
-		int offset = 0;
 		int iterasi = 1;
 		while (!fin.eof()) {
+			int dataLength = 0;
 			std::cout << "Iterasi " << iterasi << std::endl;
 			int i = 0;
 			while (i < bufferSize && !fin.eof()) {
 				fin >> std::noskipws >> buffer[i];
-				offset++;
+				dataLength++;
 				i++;
 			}
 
@@ -136,8 +137,8 @@ int main(int argc, char* argv[]) {
 			// std::cout << buffer << std::endl;
 			// std::cout << "enter:" << std::endl;
 			// std:: cin >> ch;
-			sendData(thisSocket, buffer, windowSize, 1);
-			memset(buffer, 0, strlen(buffer));
+			sendData(thisSocket, buffer, dataLength, windowSize, 1);
+			memset(buffer, 0, bufferSize);
 			iterasi++;
 		}
 

@@ -76,18 +76,22 @@ int Packet::getSize() {
 char* Packet::getMsg() {
 	char* message = new char(1 + 4 + 1+ dataSize + 1 + 1);
 	if (frameNumber > 999) {
-		sprintf(message,"%d%d", SOH, frameNumber);
+		sprintf(message,"%c%d", SOH, frameNumber);
 	} else if (frameNumber > 99) {
-		sprintf(message,"%d%s%d", SOH, "0", frameNumber);
+		sprintf(message,"%c%s%d", SOH, "0", frameNumber);
 	} else if (frameNumber > 9) {
-		sprintf(message,"%d%s%d", SOH, "00", frameNumber);
+		sprintf(message,"%c%s%d", SOH, "00", frameNumber);
 	} else {
-		sprintf(message,"%d%s%d", SOH, "000", frameNumber);
+		sprintf(message,"%c%s%d", SOH, "000", frameNumber);
 	}
 
-	sprintf(message, "%s%d%s%d%s", message, STX, data, ETX, "0");
+	sprintf(message, "%s%c%s%c%s", message, STX, data, ETX, "0");
 
 	return message;
+}
+
+int Packet::getMsgSize() {
+	return (1 + 4 + 1 + dataSize + 1 + 1);
 }
 
 void Packet::printMsg() {

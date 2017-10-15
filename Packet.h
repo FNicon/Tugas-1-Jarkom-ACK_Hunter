@@ -28,6 +28,7 @@ public:
 	char getChecksum();
 
 	char* getMsg();
+	int getMsgSize();
 	void printMsg();
 };
 

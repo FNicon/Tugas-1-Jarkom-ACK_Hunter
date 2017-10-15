@@ -1,2 +1,2 @@
 make:
-	g++ Packet.cpp test.cpp Ack.cpp -o driver
+	g++ Packet.cpp sender.cpp Ack.cpp -o driver

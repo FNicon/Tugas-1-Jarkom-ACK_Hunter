@@ -7,53 +7,22 @@ Taken from: http://www.binarytides.com/programming-udp-sockets-c-linux/
 #include<stdlib.h> //exit(0);
 #include<arpa/inet.h>
 #include<sys/socket.h>
- 
+#include "CheckSum.h"
 #define SERVER "127.0.0.1"
 #define BUFFER_LENGTH 512//Max length of buffer
 #define PORT 8888 //The port on which to send data
-void printHextoBit(char a) {
-	int mask = 0x80; /* 10000000 */
-	while (mask>0) {
-		printf("%d", (a & mask) > 0 );
-		mask >>= 1; /* move the bit down */
-	}
-	printf("\n");
-}
-char buildCheckSum(char* inputString) {
-	char checkSum;
-	checkSum = 0;
-	int i;
-	for (i=0;i<strlen(inputString);i++) {
-		printf("%x \n", inputString[i]);
-		printHextoBit(inputString[i]);
-		checkSum = checkSum + inputString[i];
-	}
-	return(checkSum);
-}
-char* buildMessage() {
-	char check;
-	check = buildCheckSum(0x1+atoi(sequenceNumber)+stx+data+etx);
-	return(0x1+atoi(sequenceNumber)+stx+data+etx+check);
-}
 void die(char *errorMessage) {
 	perror(errorMessage);
 	exit(1);
 }
 int main(void) {
-	struct messageSent {
-		char soh;
-		int sequenceNumber;
-		char stx;
-		char data;
-		char etx;
-		char checksum;
-	}
 	struct sockaddr_in clientAddress;
 	char testSum;
 	int socketConnector;
 	int socketSize=sizeof(clientAddress);
 	char buffer[BUFFER_LENGTH];
 	char message[BUFFER_LENGTH];
+	CheckSum check;
 	socketConnector = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (socketConnector == -1) {
 		die("socket");
@@ -68,9 +37,9 @@ int main(void) {
 	while(1) {
 		printf("Enter message : ");
 		gets(message);
-		testSum = buildCheckSum(message);
+		check = new CheckSum(message);
+		testSum = check.buildCheckSum(message);
 		printf("CheckSum : %x \n",testSum);
-		printHextoBit(testSum);
 		//send the message
 		if (sendto(socketConnector, message, strlen(message) , 0 , (struct sockaddr *) &clientAddress, socketSize)==-1) {
 			die("sendto()");

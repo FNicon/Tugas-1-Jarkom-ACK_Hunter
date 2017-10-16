@@ -1,6 +1,7 @@
 #ifndef _PACKET_
 #define _PACKET_
 #include "macros.h"
+#include "CheckSum.h"
 #include <string.h>
 
 class Packet {

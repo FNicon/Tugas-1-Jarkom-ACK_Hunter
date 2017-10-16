@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <fstream>
 #include <vector>
 #include <unistd.h>
@@ -12,8 +14,12 @@
 #define PORT 8888
 
 struct sockaddr_in otherAddress;
+
 socklen_t slen = sizeof(otherAddress);
 
+/* Mengirim pesan dan menerima Ack.
+ * WIP Error message
+ */
 int sendSinglePacket(int thisSocket, Packet packet) {
 	char ack[7];
 
@@ -64,6 +70,10 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 }
 
 int main(int argc, char* argv[]) {
+	struct timeval timeoutVal;
+	timeoutVal.tv_sec = 0;                            //0 secs
+	timeoutVal.tv_usec = 100000;                       //100 ms
+
 	if (argc != 6) {
 		std::cout << "Usage : ./sendfile <file name> <window size> <buffer size> <destination ip> <destination port>" << std::endl;
 		return 0;
@@ -87,6 +97,12 @@ int main(int argc, char* argv[]) {
 			std::cout << "Failed to create socket!" << std::endl;
 			return 0;
 		}
+
+		if (setsockopt(thisSocket, SOL_SOCKET, SO_RCVTIMEO, &timeoutVal, sizeof(timeoutVal))<0) {
+			std::cout << "Failed to set timeout!" << std::endl;
+			return 0;
+		}
+
 
 		memset((char*) &otherAddress, 0, sizeof(otherAddress));
 		otherAddress.sin_family = AF_INET;

@@ -1,6 +1,7 @@
 #ifndef _ACK_
 #define _ACK_
 #include "macros.h"
+#include "CheckSum.h"
 #include <string.h>
 
 class Ack {
@@ -8,7 +9,6 @@ private:
 	char status;
 	int nextSeq;
 	char advWindow;
-	char checkSum;
 
 public:
 	Ack(char* receivedFrame);

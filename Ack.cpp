@@ -9,8 +9,6 @@ Ack::Ack(char* receivedFrame) {
 	nextSeq = 9999;
 
 	advWindow = 'X';
-
-	checkSum = 'Y';
 }
 
 Ack::Ack(char* receivedFrame, int sequence) {
@@ -20,8 +18,6 @@ Ack::Ack(char* receivedFrame, int sequence) {
 	nextSeq = sequence;
 
 	advWindow = 'X';
-
-	checkSum = 'Y';
 }
 
 char Ack::getStatus() {
@@ -41,8 +37,10 @@ char* Ack::getAck() {
 		sprintf(ack,"%c%s%d", GOOD_ACK, "000", nextSeq);
 	}
 
-	sprintf(ack, "%s%c%c", ack, advWindow, checkSum);
-
+	sprintf(ack, "%s%c", ack, advWindow);
+	CheckSum check = *(new CheckSum(ack));
+	check.BuildCheckSum();
+	sprintf(ack, "%s%c",ack,check.getCheckSum());
 	return ack;
 }
 

@@ -9,7 +9,6 @@ private:
 	int frameNumber;
 	int dataSize;
 	char* data;
-	char checkSum;
 
 public:
 	Packet(int frameNumber, char* data);

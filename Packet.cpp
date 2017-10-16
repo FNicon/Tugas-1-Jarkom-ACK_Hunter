@@ -6,7 +6,6 @@ Packet::Packet(int frameNumber, char* data) {
 	this->frameNumber = frameNumber;
 	this->dataSize = strlen(data);
 	this->data = new char[dataSize];
-	this->checkSum = '?';
 	for (int i = 0; i < dataSize; i++) {
 		this->data[i] = data[i];
 	}
@@ -16,8 +15,6 @@ Packet::Packet(const Packet& packet) {
 	this->frameNumber = packet.frameNumber;
 	this->dataSize = strlen(packet.data);//sizeof(packet.data)/sizeof(packet.data[0]);
 	this->data = new char(dataSize);
-	(this->checkSum) = (packet.checkSum);
-
 	for (int i = 0; i < dataSize; i++) {
 		this->data[i] = packet.data[i];
 	}
@@ -28,8 +25,6 @@ Packet& Packet::operator=(const Packet& packet) {
 	this->dataSize = strlen(packet.data);
 	delete [] data;
 	this->data = new char(dataSize);
-	(this->checkSum) = (packet.checkSum);
-
 	for (int i = 0; i < dataSize; i++) {
 		data[i] = packet.data[i];
 	}
@@ -76,9 +71,10 @@ char* Packet::getMsg() {
 	} else {
 		sprintf(message,"%c%s%d", SOH, "000", frameNumber);
 	}
-
-	sprintf(message, "%s%c%s%c%s", message, STX, data, ETX, "0");
-
+	sprintf(message, "%s%c%s%c", message, STX, data, ETX);
+	CheckSum check = *(new CheckSum(message));
+	check.BuildCheckSum();
+	sprintf(message,"%s,%c",message,check.getCheckSum());
 	return message;
 }
 

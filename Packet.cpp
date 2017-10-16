@@ -71,7 +71,12 @@ char* Packet::getMsg() {
 	} else {
 		sprintf(message,"%c%s%d", SOH, "000", frameNumber);
 	}
-	sprintf(message, "%s%c%s%c", message, STX, data, ETX);
+
+	if (data[0] != 0) {
+		sprintf(message, "%s%c%c%c", message, STX, data[0], ETX);
+	} else {
+		sprintf(message, "%s%c%s%c", message, STX, "EFFF", ETX);
+	}
 	CheckSum check = *(new CheckSum(message));
 	check.BuildCheckSum();
 	sprintf(message,"%s,%c",message,check.getCheckSum());

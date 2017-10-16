@@ -7,17 +7,40 @@
 #include <fstream>
 #include <vector>
 #include <unistd.h>
-#include "Ack.h"
 #include "CheckSum.h"
 
 struct sockaddr_in myAddr, otherAddr;
 int ackCount = 0;
 
-void sendAck(int sock, unsigned char* recvData) {
-	Ack reply(recvData, ++ackCount);
-std::cout << "Here" << std::endl;
-	 if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1)
-    {
+// void sendAck(int sock, char* recvData) {
+// 	Ack reply(recvData, ++ackCount);
+
+// 	 if (sendto(sock, reply.getAck(), 7, 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1)
+//     {
+//         std::cout << "Gagal mengirim ack ke-?" << std::endl;
+//         exit(1);
+//     }
+// }
+
+void sendAck(int sock, char* recvData) {
+	ack reply;
+	int sequence = 0;
+	sequence = (sequence ^ recvData[1]) << 24;
+	sequence = (sequence ^ recvData[2]) << 16;
+	sequence = (sequence ^ recvData[3]) << 8;
+	sequence = (sequence ^ recvData[4]);
+	sequence++;
+
+	reply.verdict = GOOD_ACK;
+	reply.nextSeq[0] = (sequence & 0xFF000000) >> 24;
+	reply.nextSeq[1] = (sequence & 0xFF0000) >> 16;
+	reply.nextSeq[2] = (sequence & 0xFF00) >> 8;
+	reply.nextSeq[3] = (sequence & 0xFF);
+	reply.advWindow = '0';
+	CheckSum check(&reply);
+	reply.checksum = check.getCheckSum();
+
+	if (sendto(sock, &reply, sizeof(reply), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1) {
         std::cout << "Gagal mengirim ack ke-?" << std::endl;
         exit(1);
     }
@@ -46,7 +69,7 @@ int main(int argc, char* argv[]) {
 		int bufferPtr = 0;
 
 		char buffer[bufferSize];
-		unsigned char recvData[bufferSize];
+		char recvData[bufferSize];
 
 		if ((mySocket=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 	        std::cout << "Failed to create socket" << std::endl;
@@ -78,14 +101,14 @@ int main(int argc, char* argv[]) {
 			}
 
 			printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
-        	printf("[main] Data: %c\n" , (char)recvData[6]);
+        	printf("[main] Data: %s\n" , recvData);
 
         	CheckSum packetChecker(recvData);
 
         	std::cout << "[main] Buffer ptr before: " << bufferPtr << std::endl;
         	if (packetChecker.CheckSumValidation()) {
-        		std::cout << "[main] sizeof recvData: " << sizeof(recvData) << std::endl;
-        		printf ("[sendSinglePacket] readable format: %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
+        		std::cout << "[main] Menambah buffPtr" << std::endl;
+        		std::cout << "[main] TESS: " << strlen(recvData) << std::endl;
         		sendAck(mySocket, recvData);
         		buffer[bufferPtr] = recvData[6];
         		bufferPtr++;

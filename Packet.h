@@ -3,21 +3,22 @@
 #include "macros.h"
 #include "CheckSum.h"
 #include <string.h>
+#include <stdint.h>
 
 class Packet {
 private:
-	int frameNumber;
+	uint32_t frameNumber;
 	int dataSize;
 	char* data;
 
 public:
-	Packet(int frameNumber, char* data);
+	Packet(uint32_t frameNumber, char* data);
 	Packet(const Packet& packet);
 	Packet& operator=(const Packet& packet);
 	~Packet();
 
-	void setFrameNumber(int number);
-	int getFrameNumber();
+	void setFrameNumber(uint32_t number);
+	uint32_t getFrameNumber();
 
 	void setData(char* data);
 	char* getData();
@@ -27,7 +28,7 @@ public:
 	void setChecksum(char checkSum);
 	char getChecksum();
 
-	char* getMsg();
+	unsigned char* getMsg();
 	int getMsgSize();
 	void printMsg();
 };

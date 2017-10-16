@@ -8,6 +8,7 @@
 #include <vector>
 #include <unistd.h>
 #include "Ack.h"
+#include "CheckSum.h"
 
 struct sockaddr_in myAddr, otherAddr;
 int ackCount = 0;
@@ -73,7 +74,11 @@ int main(int argc, char* argv[]) {
 			printf("Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
         	printf("Data: %s\n" , recvData);
 
-        	sendAck(mySocket, recvData);
+        	CheckSum packetChecker(recvData);
+
+        	if (packetChecker.CheckSumValidation()) {
+        		sendAck(mySocket, recvData);
+        	}
 		}
 
 		fout.close();

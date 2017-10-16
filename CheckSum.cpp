@@ -26,8 +26,20 @@ void CheckSum::BuildCheckSum() {
 		}	
 	}
 }
-bool CheckSum::CheckSumValidation() {
-	return (true);
+bool CheckSum::CheckSumValidation(char* inputPacket) {
+	int i;
+	char tempCheckSum;
+	tempCheckSum = 0;
+	for (i=0;i<strlen(inputPacket) - 1;i++) {
+		tempCheckSum = tempCheckSum + inputPacket[i];
+	}
+	if (tempCheckSum > 255) {
+		tempCheckSum = 0;
+		for (i=0;i<strlen(inputPacket) - 1;i++) {
+			tempCheckSum = tempCheckSum + ~inputPacket[i];
+		}
+	}
+	return (tempCheckSum == inputPacket[strlen(inputPacket)-1]);
 }
 char CheckSum::getCheckSum() {
 	return (checkSum);

@@ -72,13 +72,13 @@ int main(int argc, char* argv[]) {
 			}
 
 			printf("Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
-        	printf("Data: %s\n" , recvData);
+        	printf("Data: %x\n" , recvData);
 
         	CheckSum packetChecker(recvData);
 
-        	if (packetChecker.CheckSumValidation()) {
-        		sendAck(mySocket, recvData);
-        	}
+        	//if (packetChecker.CheckSumValidation(recvData)) {
+				sendAck(mySocket, recvData);
+        	//}
 		}
 
 		fout.close();

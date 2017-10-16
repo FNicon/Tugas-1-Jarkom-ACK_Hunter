@@ -25,7 +25,7 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 		std::cout << "Failed to receive ack-" << std::endl;
 	}
 
-	std::cout << "Package: " << packet.getMsg() << std::endl;
+	std::cout << "Package: ";// << packet.getMsg() << std::endl;
 	printf ("%x%c%c%c%c%x%c%x%c\n", packet.getMsg()[0], packet.getMsg()[1], packet.getMsg()[2], packet.getMsg()[3], packet.getMsg()[4], packet.getMsg()[5], packet.getMsg()[6], packet.getMsg()[7], packet.getMsg()[8]);
 	std::cout << "Next sequence: " << ack << std::endl << std::endl;
 }

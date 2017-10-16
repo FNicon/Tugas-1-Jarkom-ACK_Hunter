@@ -79,7 +79,7 @@ char* Packet::getMsg() {
 	}
 	CheckSum check = *(new CheckSum(message));
 	check.BuildCheckSum();
-	sprintf(message,"%s,%c",message,check.getCheckSum());
+	sprintf(message,"%s%c",message,check.getCheckSum());
 	return message;
 }
 

@@ -40,23 +40,23 @@ CheckSum::CheckSum(unsigned char* pack) {
 	}
 }
 
-void CheckSum::BuildCheckSum() {
-	int i;
-	checkSum = 0;
-	for (i=0;i<strlen(packet) - 1;i++) {
-		//printf("%x \n", inputString[i]);
-		//printHextoBit(inputString[i]);
-		checkSum = checkSum + packet[i];
-	}
-	if (checkSum > 255) {
-		checkSum = 0;
-		for (i=0;i<strlen(packet) - 1;i++) {
-			//printf("%x \n", inputString[i]);
-			//printHextoBit(inputString[i]);
-			checkSum = checkSum + ~packet[i];
-		}	
-	}
-}
+// void CheckSum::BuildCheckSum() {
+// 	int i;
+// 	checkSum = 0;
+// 	for (i=0;i<strlen(packet) - 1;i++) {
+// 		//printf("%x \n", inputString[i]);
+// 		//printHextoBit(inputString[i]);
+// 		checkSum = checkSum + packet[i];
+// 	}
+// 	if (checkSum > 255) {
+// 		checkSum = 0;
+// 		for (i=0;i<strlen(packet) - 1;i++) {
+// 			//printf("%x \n", inputString[i]);
+// 			//printHextoBit(inputString[i]);
+// 			checkSum = checkSum + ~packet[i];
+// 		}	
+// 	}
+// }
 
 void CheckSum::BuildCheckSum_2() {
 	int i;
@@ -79,9 +79,10 @@ void CheckSum::BuildCheckSum_2() {
 bool CheckSum::CheckSumValidation() {
 	return (true);
 }
-char CheckSum::getCheckSum() {
-	return (checkSum);
-}
+
+// char CheckSum::getCheckSum() {
+// 	return (checkSum);
+// }
 
 unsigned char CheckSum::getCheckSum_2() {
 	return (checkSum_2);

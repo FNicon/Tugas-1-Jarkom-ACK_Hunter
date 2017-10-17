@@ -6,6 +6,7 @@
 
 class Ack {
 private:
+	unsigned char* ack;
 	char status;
 	int nextSeq;
 	char advWindow;

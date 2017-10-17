@@ -98,5 +98,5 @@ int Packet::getMsgSize() {
 }
 
 void Packet::printMsg() {
-	std::cout << this->getMsg() << std::endl;
+	printf ("[Packet.cpp] package content (hex): %x %x %x %x %x %x %x %x %x\n", this->getMsg()[0], this->getMsg()[1], this->getMsg()[2], this->getMsg()[3], this->getMsg()[4], this->getMsg()[5], this->getMsg()[6], this->getMsg()[7], this->getMsg()[8]);
 }

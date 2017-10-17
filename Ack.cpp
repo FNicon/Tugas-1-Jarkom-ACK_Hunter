@@ -44,7 +44,6 @@ unsigned char* Ack::getAck() {
 	ack[6] = 0;
 	CheckSum check(ack);
 	check.BuildCheckSum();
-	std::cout << "Here" << std::endl;
 	ack[6] = check.getCheckSum();
 
 	// sprintf (ack, "%c%d%d%d%c", SOH, (nextSeq & 0xff000000) >> 24, (nextSeq & 0xff0000) >> 16, (nextSeq & 0xff00) >> 8, (nextSeq & 0xff));

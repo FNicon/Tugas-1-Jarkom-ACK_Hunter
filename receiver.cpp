@@ -15,7 +15,6 @@ int ackCount = 0;
 
 void sendAck(int sock, unsigned char* recvData) {
 	Ack reply(recvData, ++ackCount);
-std::cout << "Here" << std::endl;
 	 if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1)
     {
         std::cout << "Gagal mengirim ack ke-?" << std::endl;
@@ -45,7 +44,7 @@ int main(int argc, char* argv[]) {
 		socklen_t slen = sizeof(otherAddr);
 		int bufferPtr = 0;
 
-		char buffer[bufferSize];
+		char bufferToWrite[bufferSize];
 		unsigned char recvData[bufferSize];
 
 		if ((mySocket=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
@@ -82,19 +81,27 @@ int main(int argc, char* argv[]) {
 
         	CheckSum packetChecker(recvData);
 
-        	std::cout << "[main] Buffer ptr before: " << bufferPtr << std::endl;
         	if (packetChecker.CheckSumValidation()) {
-        		std::cout << "[main] sizeof recvData: " << sizeof(recvData) << std::endl;
         		printf ("[sendSinglePacket] readable format: %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
         		sendAck(mySocket, recvData);
-        		buffer[bufferPtr] = recvData[6];
+        		bufferToWrite[bufferPtr] = recvData[6];
         		bufferPtr++;
         	}
 
-        	std::cout << "[main] Buffer ptr after: " << bufferPtr << std::endl;
-        	std::cout << "[main] bufferSize: " << bufferSize << std::endl;
+        	if (bufferPtr >= bufferSize) {
+        		for (int i = 0; i < bufferSize; i++) {
+        			fout << bufferToWrite[i];
+        		}
+        		memset(bufferToWrite, 0, bufferSize);
+        		bufferPtr = 0;
+        	}
 
-        	if (recvData[4] == '-') {
+        	if (recvData[6] == 0) {
+        		int i = 0;
+        		while (bufferToWrite[i] != 0) {
+        			fout << bufferToWrite[i];
+        			i++;
+        		}
         		finished = true;
         		std::cout << "[main] Finished! closing socket now..." << std::endl;
         	}

@@ -8,4 +8,22 @@
 #define GOOD_ACK 6
 #define NACK 21
 
+typedef struct segment {
+	char soh;
+	char seqNum[4];
+	char stx;
+	char data;
+	char etx;
+	char checksum;
+} segment;
+
+typedef struct ack {
+	char verdict;
+	char nextSeq[4];
+	char advWindow;
+	char checksum;
+} ack;
+
+
+
 #endif

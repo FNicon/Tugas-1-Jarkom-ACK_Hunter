@@ -5,13 +5,12 @@
 
 class CheckSum {
 	private :
-		char* packet;
-		char checkSum;
+		unsigned char* packet;
+		unsigned char checkSum;
 	public :
-		CheckSum(char* inputPacket);
+		CheckSum(unsigned char* inputPacket);
 		void BuildCheckSum();
-		bool CheckSumValidation(char* inputPacket);
-		char getCheckSum();
-		//void printHextoBit(char a);
+		bool CheckSumValidation(unsigned char* inputPacket);
+		unsigned char getCheckSum();
 };
 #endif

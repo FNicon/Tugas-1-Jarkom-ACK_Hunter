@@ -6,17 +6,21 @@
 
 class Ack {
 private:
+	unsigned char* ack;
 	char status;
 	int nextSeq;
 	char advWindow;
+	// char* receivedPacket;
 
 public:
-	Ack(char* receivedFrame);
-	Ack(char* receivedFrame, int sequence);
+	Ack(unsigned char* receivedFrame);
+	Ack(unsigned char* receivedFrame, int sequence);
 
 	char getStatus();
 
-	char* getAck();
+	// char* getRecvPacket();
+	char extractData();
+	unsigned char* getAck();
 	void printAck();
 };
 

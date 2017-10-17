@@ -2,7 +2,7 @@
 #include <iostream>
 #include "Packet.h"
 
-Packet::Packet(int frameNumber, char* data) {
+Packet::Packet(uint32_t frameNumber, char* data) {
 	this->frameNumber = frameNumber;
 	this->dataSize = strlen(data);
 	this->data = new char[dataSize];
@@ -36,10 +36,10 @@ Packet::~Packet() {
 	delete [] data;
 }
 
-void Packet::setFrameNumber(int number) {
+void Packet::setFrameNumber(uint32_t number) {
 	this->frameNumber = number;
 }
-int Packet::getFrameNumber() {
+uint32_t Packet::getFrameNumber() {
 	return frameNumber;
 }
 
@@ -60,27 +60,37 @@ int Packet::getSize() {
 	return dataSize;
 }
 
-char* Packet::getMsg() {
-	char* message = new char[1 + 4 + 1+ dataSize + 1 + 1];
-	if (frameNumber > 999) {
-		sprintf(message,"%c%d", SOH, frameNumber);
-	} else if (frameNumber > 99) {
-		sprintf(message,"%c%s%d", SOH, "0", frameNumber);
-	} else if (frameNumber > 9) {
-		sprintf(message,"%c%s%d", SOH, "00", frameNumber);
-	} else {
-		sprintf(message,"%c%s%d", SOH, "000", frameNumber);
-	}
+unsigned char* Packet::getMsg() {
+	unsigned char* message = new unsigned char[1 + 4 + 1+ dataSize + 1 + 1];
+		message[0] = SOH;
+		message[1] = frameNumber >> 24;
+		message[2] = frameNumber >> 16;
+		message[3] = frameNumber >> 8;
+		message[4] = frameNumber >> 0;
+		message[5] = STX;
+		message[6] = data[0];
+		message[7] = ETX;
+		message[8] = 0;
+		CheckSum check(message);
+		message[8] = check.getCheckSum_2();
 
-	if (data[0] != 0) {
-		sprintf(message, "%s%c%c%c", message, STX, data[0], ETX);
-	} else {
-		sprintf(message, "%s%c%s%c", message, STX, "EFFF", ETX);
-	}
-	CheckSum check = *(new CheckSum(message));
-	check.BuildCheckSum();
-	sprintf(message,"%s%c",message,check.getCheckSum());
-	return message;
+
+		// sprintf (message, "%c%c%c%c%c", SOH, (frameNumber & 0xff000000) >> 24, (frameNumber & 0xff0000) >> 16, (frameNumber & 0xff00) >> 8, (frameNumber & 0xff));
+		// // if (frameNumber > 999) {
+		// // 	sprintf(message,"%c%d", SOH, frameNumber);
+		// // } else if (frameNumber > 99) {
+		// // 	sprintf(message,"%c%s%d", SOH, "0", frameNumber);
+		// // } else if (frameNumber > 9) {
+		// // 	sprintf(message,"%c%s%d", SOH, "00", frameNumber);
+		// // } else {
+		// // 	sprintf(message,"%c%s%d", SOH, "000", frameNumber);
+		// // }
+
+		// sprintf(message, "%s%c%c%c", message, STX, data[0], ETX);
+
+		// check.BuildCheckSum();
+		// sprintf(message,"%s%c",message,check.getCheckSum());
+		return message;
 }
 
 int Packet::getMsgSize() {
@@ -88,5 +98,5 @@ int Packet::getMsgSize() {
 }
 
 void Packet::printMsg() {
-	std::cout << this->getMsg() << std::endl;
+	printf ("[Packet.cpp] package content (hex): %x %x %x %x %x %x %x %x %x\n", this->getMsg()[0], this->getMsg()[1], this->getMsg()[2], this->getMsg()[3], this->getMsg()[4], this->getMsg()[5], this->getMsg()[6], this->getMsg()[7], this->getMsg()[8]);
 }

@@ -7,24 +7,40 @@
 #include <fstream>
 #include <vector>
 #include <unistd.h>
-#include "Ack.h"
 #include "CheckSum.h"
 
 struct sockaddr_in myAddr, otherAddr;
 int ackCount = 0;
-socklen_t slen = sizeof(otherAddr);
 
-void sendAck(int sock, unsigned char* recvData, int maxSequence) {
-	int recvSeq = 0;
-	recvSeq = (recvSeq ^ recvData[1]) << 8;
-	recvSeq = (recvSeq ^ recvData[2]) << 8;
-	recvSeq = (recvSeq ^ recvData[3]) << 8;
-	recvSeq = (recvSeq ^ recvData[4]);
-	Ack reply(recvData, recvSeq);
-	reply.printAck();
-	// std::cout << "sigh... " << recvSeq << std::endl;
-	 if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1)
-    {
+// void sendAck(int sock, char* recvData) {
+// 	Ack reply(recvData, ++ackCount);
+
+// 	 if (sendto(sock, reply.getAck(), 7, 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1)
+//     {
+//         std::cout << "Gagal mengirim ack ke-?" << std::endl;
+//         exit(1);
+//     }
+// }
+
+void sendAck(int sock, char* recvData) {
+	ack reply;
+	int sequence = 0;
+	sequence = (sequence ^ recvData[1]) << 24;
+	sequence = (sequence ^ recvData[2]) << 16;
+	sequence = (sequence ^ recvData[3]) << 8;
+	sequence = (sequence ^ recvData[4]);
+	sequence++;
+
+	reply.verdict = GOOD_ACK;
+	reply.nextSeq[0] = (sequence & 0xFF000000) >> 24;
+	reply.nextSeq[1] = (sequence & 0xFF0000) >> 16;
+	reply.nextSeq[2] = (sequence & 0xFF00) >> 8;
+	reply.nextSeq[3] = (sequence & 0xFF);
+	reply.advWindow = '0';
+	CheckSum check(&reply);
+	reply.checksum = check.getCheckSum();
+
+	if (sendto(sock, &reply, sizeof(reply), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1) {
         std::cout << "Gagal mengirim ack ke-?" << std::endl;
         exit(1);
     }
@@ -33,21 +49,6 @@ void sendAck(int sock, unsigned char* recvData, int maxSequence) {
 // void writeToFile(char* bufferToWrite, std::ofstream targetFile, ) {
 // 	for (int i = 0; i < )
 // }
-
-int handshake(int thisSocket, const int* RWS) {
-	int SWS = 0;
-
-	fflush(stdout);
-	if (recvfrom(thisSocket, &SWS, sizeof(SWS), 0, (struct sockaddr *) &otherAddr, &slen) == -1){
-		std::cout << "Failed to receive handshake" << std::endl;
-	}
-
-	if (sendto(thisSocket, RWS, sizeof(RWS), 0 , (struct sockaddr *) &otherAddr, sizeof(otherAddr))==-1) {
-		std::cout << "Failed to send handshake reply" << std::endl;
-	}
-
-	return (SWS + *RWS + 1);
-}
 
 int main(int argc, char* argv[]) {
 	if (argc != 5) {
@@ -64,10 +65,11 @@ int main(int argc, char* argv[]) {
 
 		int mySocket;
 		int recvlen;
+		socklen_t slen = sizeof(otherAddr);
 		int bufferPtr = 0;
 
-		char bufferToWrite[bufferSize];
-		unsigned char recvData[bufferSize];
+		char buffer[bufferSize];
+		char recvData[bufferSize];
 
 		if ((mySocket=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
 	        std::cout << "Failed to create socket" << std::endl;
@@ -87,15 +89,6 @@ int main(int argc, char* argv[]) {
 		std::ofstream fout;
 		fout.open(fileName);
 
-		std::cout << "Waiting for handshake..." << std::endl;
-		int maxSequence = handshake(mySocket, &windowSize);
-		// std::cout << "RWS: " << maxSequence << std::endl;
-		sleep(1);
-		// {
-		// 	char ch;
-		// 	std::cin >> ch;
-		// }
-
 		while (!finished) {
 			std::cout << "Waiting for data..." << std::endl;
 			fflush(stdout);
@@ -107,33 +100,24 @@ int main(int argc, char* argv[]) {
 				exit(1);
 			}
 
-			printf("=============================\n");
 			printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
-        	printf("[main] Data (hex): %x\n" , (char)recvData[6]);
+        	printf("[main] Data: %s\n" , recvData);
 
         	CheckSum packetChecker(recvData);
 
+        	std::cout << "[main] Buffer ptr before: " << bufferPtr << std::endl;
         	if (packetChecker.CheckSumValidation()) {
-        		printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
-        		sendAck(mySocket, recvData, maxSequence);
-        		bufferToWrite[bufferPtr] = recvData[6];
+        		std::cout << "[main] Menambah buffPtr" << std::endl;
+        		std::cout << "[main] TESS: " << strlen(recvData) << std::endl;
+        		sendAck(mySocket, recvData);
+        		buffer[bufferPtr] = recvData[6];
         		bufferPtr++;
         	}
 
-        	if (bufferPtr >= bufferSize) {
-        		for (int i = 0; i < bufferSize; i++) {
-        			fout << bufferToWrite[i];
-        		}
-        		memset(bufferToWrite, 0, bufferSize);
-        		bufferPtr = 0;
-        	}
+        	std::cout << "[main] Buffer ptr after: " << bufferPtr << std::endl;
+        	std::cout << "[main] bufferSize: " << bufferSize << std::endl;
 
-        	if (recvData[6] == 0) {
-        		int i = 0;
-        		while (bufferToWrite[i] != 0) {
-        			fout << bufferToWrite[i];
-        			i++;
-        		}
+        	if (recvData[4] == '-') {
         		finished = true;
         		std::cout << "[main] Finished! closing socket now..." << std::endl;
         	}

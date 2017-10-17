@@ -1,7 +1,9 @@
+#include <future>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <thread>
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/time.h>
@@ -113,7 +115,8 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 		std::cout << "[sendData] Isi paket: " << payload << std::endl;
 
-		errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence, payload)));
+		std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
+		errorCode = fut.get();
 		usleep(800);
 
 		if (errorCode == 0) {
@@ -177,7 +180,7 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 int main(int argc, char* argv[]) {
 	struct timeval timeoutVal;
 	timeoutVal.tv_sec = 0;                            //0 secs
-	timeoutVal.tv_usec = 100000;                       //100 ms
+	timeoutVal.tv_usec = 800;                       //2000 us
 
 	if (argc != 6) {
 		std::cout << "Usage : ./sendfile <file name> <window size> <buffer size> <destination ip> <destination port>" << std::endl;

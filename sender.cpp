@@ -26,11 +26,13 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	int nextSeq = 0;
 	if (sendto(thisSocket, packet.getMsg(), sizeof(packet.getMsg()), 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
 		std::cout << "Failed to send packet number-" << packet.getFrameNumber() << std::endl;
+		return 1;
 	}
 
 	fflush(stdout);
 	if (recvfrom(thisSocket, ack, 7, 0, (struct sockaddr *) &otherAddress, &slen) == -1){
 		std::cout << "Failed to receive ack-" << std::endl;
+		return -1;
 	}
 
 	packet.printMsg();
@@ -49,6 +51,7 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	// printf("[sendSinglePacket] Empat: %x\n", ack[4]);
 
 	std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
+	return 0;
 }
 
 
@@ -91,27 +94,33 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 	int lastAckRecv;
 	int packageCount = 0;
+	int errorCode = 0;
+	char payload[payloadSize];
 
 	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
 		if (sequence >= maxSequence) {
 			sequence = 0;
 		}
-		std::cout << "[sendData] Mengirim paket ke-" << ++packageCount << std::endl;
+		std::cout << "[sendData] Mengirim paket ke-" << packageCount << std::endl;
 		std::cout << "[sendData] Sequence paket: " << sequence << std::endl;
 
-		char payload[payloadSize];
-		for (int j = 0; j < payloadSize && j < dataLength; j++) {
-			payload[j] = data[bufferPtr];
-			bufferPtr++;
+		if (errorCode == 0) {
+			for (int j = 0; j < payloadSize && j < dataLength; j++) {
+				payload[j] = data[bufferPtr];
+				bufferPtr++;
+			}
 		}
 
 		std::cout << "[sendData] Isi paket: " << payload << std::endl;
 
-		sendSinglePacket(thisSocket, *(new Packet(sequence, payload)));
+		errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence, payload)));
 		usleep(800);
 
-		windowPtr += payloadSize;
-		sequence++;
+		if (errorCode == 0) {
+			windowPtr += payloadSize;
+			sequence++;
+			packageCount++;
+		}
 	}
 
 }

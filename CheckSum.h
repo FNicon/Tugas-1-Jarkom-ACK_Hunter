@@ -10,7 +10,7 @@ class CheckSum {
 	public :
 		CheckSum(char* inputPacket);
 		void BuildCheckSum();
-		bool CheckSumValidation();
+		bool CheckSumValidation(char* inputPacket);
 		char getCheckSum();
 		//void printHextoBit(char a);
 };

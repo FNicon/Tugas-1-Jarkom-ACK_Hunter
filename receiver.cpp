@@ -14,6 +14,10 @@ struct sockaddr_in myAddr, otherAddr;
 int ackCount = 0;
 socklen_t slen = sizeof(otherAddr);
 
+bool checkEOF(unsigned char* recvData) {
+	return recvData[0] == 'E' && recvData[1] == 'O' && recvData[2] == 'F';
+}
+
 void sendAck(int sock, unsigned char* recvData, int maxSequence) {
 	int recvSeq = 0;
 	recvSeq = (recvSeq ^ recvData[1]) << 8;
@@ -65,6 +69,7 @@ int main(int argc, char* argv[]) {
 		int mySocket;
 		int recvlen;
 		int bufferPtr = 0;
+		std::string EOFmesg = "EOF";
 
 		char bufferToWrite[bufferSize];
 		unsigned char recvData[bufferSize];
@@ -118,6 +123,7 @@ int main(int argc, char* argv[]) {
         		sendAck(mySocket, recvData, maxSequence);
         		bufferToWrite[bufferPtr] = recvData[6];
         		bufferPtr++;
+        		printf ("[main] bufferPtr: %d\n", bufferPtr);
         	}
 
         	if (bufferPtr >= bufferSize) {
@@ -128,7 +134,7 @@ int main(int argc, char* argv[]) {
         		bufferPtr = 0;
         	}
 
-        	if (recvData[6] == 0) {
+        	if (checkEOF(recvData)) {
         		int i = 0;
         		while (bufferToWrite[i] != 0) {
         			fout << bufferToWrite[i];

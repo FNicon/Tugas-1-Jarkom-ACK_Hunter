@@ -23,7 +23,7 @@ void sendAck(int sock, unsigned char* recvData, int maxSequence) {
 	Ack reply(recvData, recvSeq);
 	reply.printAck();
 	// std::cout << "sigh... " << recvSeq << std::endl;
-	if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1) {
+	if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1){
 		std::cout << "Gagal mengirim ack ke-?" << std::endl;
 		exit(1);
 	}
@@ -109,14 +109,16 @@ int main(int argc, char* argv[]) {
 			printf("=============================\n");
 			printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
 			printf("[main] Data (hex): %x\n" , (char)recvData[6]);
-			/**/printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
+
 			CheckSum packetChecker(recvData);
+			printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
+			usleep(20000);
+
 			if (packetChecker.CheckSumValidation(recvData)) {
-				printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
 				sendAck(mySocket, recvData, maxSequence);
 				bufferToWrite[bufferPtr] = recvData[6];
 				bufferPtr++;
-			}	
+			}
 
 			if (bufferPtr >= bufferSize) {
 				for (int i = 0; i < bufferSize; i++) {
@@ -135,6 +137,7 @@ int main(int argc, char* argv[]) {
 				finished = true;
 				std::cout << "[main] Finished! closing socket now..." << std::endl;
 			}
+			//std::cout << "loop entered but no condition met.." << std::endl;
 		}
 
 		fout.close();

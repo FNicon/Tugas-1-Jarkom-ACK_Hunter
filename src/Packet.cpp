@@ -62,22 +62,21 @@ int Packet::getSize() {
 
 void Packet::getMsg() {
 	unsigned char* message = new unsigned char[1 + 4 + 1+ dataSize + 1 + 1];
-	packetMessage = new unsigned char[1 + 4 + 1 + dataSize + 1 + 1];
-	message[0] = SOH;
-	message[1] = frameNumber >> 24;
-	message[2] = frameNumber >> 16;
-	message[3] = frameNumber >> 8;
-	message[4] = frameNumber >> 0;
-	message[5] = STX;
-	message[6] = data[0];
-	message[7] = ETX;
-	message[8] = 0;
-	CheckSum check(message);
-	check.BuildCheckSum();
-	message[8] = check.getCheckSum();
-	for (int i = 0;i<=sizeof(message);i++) {
-		packetMessage[i] = message[i];
-	}
+		message[0] = SOH;
+		message[1] = frameNumber >> 24;
+		message[2] = frameNumber >> 16;
+		message[3] = frameNumber >> 8;
+		message[4] = frameNumber >> 0;
+		message[5] = STX;
+		message[6] = data[0];
+		message[7] = ETX;
+		message[8] = 0;
+		CheckSum check(message);
+		check.BuildCheckSum();
+		message[8] = check.getCheckSum();
+		for (int i = 0;i<=sizeof(message);i++) {
+			packetMessage[i] = message[i];
+		}
 
 		// sprintf (message, "%c%c%c%c%c", SOH, (frameNumber & 0xff000000) >> 24, (frameNumber & 0xff0000) >> 16, (frameNumber & 0xff00) >> 8, (frameNumber & 0xff));
 		// // if (frameNumber > 999) {

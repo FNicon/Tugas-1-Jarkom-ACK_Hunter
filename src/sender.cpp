@@ -1,9 +1,13 @@
+#include <future>
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <thread>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <fstream>
 #include <vector>
 #include <unistd.h>
@@ -13,9 +17,12 @@
 #define PORT 8888
 
 struct sockaddr_in otherAddress;
+
 socklen_t slen = sizeof(otherAddress);
 
+
 int sendSinglePacket(int thisSocket, Packet packet) {
+	packet.printMsg();
 	unsigned char ack[7];
 	unsigned char* packetToSend = new unsigned char(9);
 	int nextSeq = 0;
@@ -25,11 +32,13 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	}
 	if (sendto(thisSocket, packetToSend, sizeof(packetToSend)+1, 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
 		std::cout << "Failed to send packet number-" << packet.getFrameNumber() << std::endl;
+		return 1;
 	}
 
 	fflush(stdout);
 	if (recvfrom(thisSocket, ack, 7, 0, (struct sockaddr *) &otherAddress, &slen) == -1){
 		std::cout << "Failed to receive ack-" << std::endl;
+		return -1;
 	}
 
 	packet.printMsg();
@@ -46,8 +55,13 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 
 	nextSeq = (nextSeq ^ ack[4]);
 	// printf("[sendSinglePacket] Empat: %x\n", ack[4]);
-
-	std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
+	if (nextSeq == packet.getFrameNumber() + 1)
+		std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
+	else {
+		std::cout << "Ack Number false!" << nextSeq << std::endl << std::endl;
+		return -2;
+	}
+	return 0;
 }
 
 
@@ -65,20 +79,7 @@ int handshake(int thisSocket, const int* SWS) {
 }
 
 
-// int sendSingleSegment(int thisSocket, segment* seg) {
-// 	char ack[7];
-// 	printf ("[sendSingleSegment] readable format: %c%s%c%c%c%c\n", seg->soh, seg->seqNum, seg->stx, seg->data, seg->etx, seg->checksum);
 
-// 	if (sendto(thisSocket, seg, 9, 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
-// 		std::cout << "Failed to send packet number-" << seg->seqNum << std::endl;
-// 	}
-
-// 	if (recvfrom(thisSocket, ack, 7, 0, (struct sockaddr *) &otherAddress, &slen) == -1){
-// 		std::cout << "Failed to receive ack-" << std::endl;
-// 	}
-
-// 	std::cout << "[sendSingleSegment] Next sequence: " << ack << std::endl << std::endl;
-// }
 
 void sendData(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize, int maxSequence) {
 	bool acked = false;
@@ -90,81 +91,45 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 	int lastAckRecv;
 	int packageCount = 0;
+	int errorCode = 0;
+	char payload[payloadSize];
 
 	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
 		if (sequence >= maxSequence) {
 			sequence = 0;
 		}
-		std::cout << "[sendData] Mengirim paket ke-" << ++packageCount << std::endl;
+		std::cout << "[sendData] Mengirim paket ke-" << packageCount << std::endl;
 		std::cout << "[sendData] Sequence paket: " << sequence << std::endl;
 
-		char payload[payloadSize];
-		for (int j = 0; j < payloadSize && j < dataLength; j++) {
-			payload[j] = data[bufferPtr];
-			bufferPtr++;
+		if (errorCode == 0) {
+			for (int j = 0; j < payloadSize && j < dataLength; j++) {
+				payload[j] = data[bufferPtr];
+				bufferPtr++;
+			}
 		}
 
 		std::cout << "[sendData] Isi paket: " << payload << std::endl;
 
-		sendSinglePacket(thisSocket, *(new Packet(sequence, payload)));
-		usleep(800);
+		errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence,payload)));
+		//std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
+		//errorCode = fut.get();
 
-		windowPtr += payloadSize;
-		sequence++;
+		if (errorCode == 0) {
+			windowPtr += payloadSize;
+			sequence++;
+			packageCount++;
+		}
 	}
 
 }
 
-// void sendAllSegment(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize) {
-// 	bool acked = false;
 
-// 	int windowPtr = 0;
-// 	int bufferPtr = 0;
-// 	int sequence = 0;
-// 	int expectedAck = 0;
-// 	int maxSequence = windowSize * 2;
-// 	int lastAckRecv;
-// 	int packageCount = 0;
-
-
-// 	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
-// 		if (sequence >= maxSequence) {
-// 			sequence = 0;
-// 		}
-// 		std::cout << "[sendAllSegment] Mengirim segment ke-" << ++packageCount << std::endl;
-// 		std::cout << "[sendAllSegment] Sequence segment: " << sequence << std::endl;
-
-// 		char payload[payloadSize];
-// 		for (int j = 0; j < payloadSize && j < dataLength; j++) {
-// 			payload[j] = data[bufferPtr];
-// 			bufferPtr++;
-// 		}
-
-// 		std::cout << "[sendAllSegment] Isi segment: " << payload << std::endl;
-
-// 		segment segmentToSend;
-// 		segmentToSend.soh = SOH;
-// 		segmentToSend.seqNum[0] = (sequence & 0xFF000000) >> 24;
-// 		segmentToSend.seqNum[1] = (sequence & 0xFF0000) >> 16;
-// 		segmentToSend.seqNum[2] = (sequence & 0xFF00) >> 8;
-// 		segmentToSend.seqNum[3] = (sequence & 0xFF);
-// 		segmentToSend.stx = STX;
-// 		segmentToSend.data = payload[0];
-// 		segmentToSend.etx = ETX;
-// 		std::cout << "[sendAllSegment] Sizeof segment: " << sizeof(segmentToSend) << std::endl;
-// 		CheckSum check(&segmentToSend);
-// 		segmentToSend.checksum = (check.getCheckSum());
-
-// 		sendSingleSegment(thisSocket, &segmentToSend);
-// 		usleep(1000);
-
-// 		windowPtr += payloadSize;
-// 		sequence++;
-// 	}
-
-// }
 
 int main(int argc, char* argv[]) {
+	struct timeval timeoutVal;
+	timeoutVal.tv_sec = 2;
+	timeoutVal.tv_usec = 0;
+
 	if (argc != 6) {
 		std::cout << "Usage : ./sendfile <file name> <window size> <buffer size> <destination ip> <destination port>" << std::endl;
 		return 0;
@@ -189,6 +154,12 @@ int main(int argc, char* argv[]) {
 			return 0;
 		}
 
+		if (setsockopt(thisSocket, SOL_SOCKET, SO_RCVTIMEO, &timeoutVal, sizeof(timeoutVal))<0) {
+			std::cout << "Failed to set timeout!" << std::endl;
+			return 0;
+		}
+
+
 		memset((char*) &otherAddress, 0, sizeof(otherAddress));
 		otherAddress.sin_family = AF_INET;
 		otherAddress.sin_port = htons(destPort);
@@ -201,7 +172,7 @@ int main(int argc, char* argv[]) {
 	    int maxSequence = handshake(thisSocket, &windowSize);
 		// std::cout << "SWS: " << maxSequence << std::endl;
 	    sleep(1);
-		// {	
+		// {
 		// 	char ch;
 		// 	std::cin >> ch;
 		// }
@@ -218,7 +189,6 @@ int main(int argc, char* argv[]) {
 			}
 
 			sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
-			// sendAllSegment(thisSocket, buffer, dataLength, windowSize, 1);
 			memset(buffer, 0, bufferSize);
 			iterasi++;
 		}

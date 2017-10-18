@@ -10,6 +10,7 @@ private:
 	uint32_t frameNumber;
 	int dataSize;
 	char* data;
+	unsigned char* packetMessage;
 
 public:
 	Packet(uint32_t frameNumber, char* data);
@@ -28,7 +29,8 @@ public:
 	void setChecksum(char checkSum);
 	char getChecksum();
 
-	unsigned char* getMsg();
+	void getMsg();
+	unsigned char* getPacketMessage();
 	int getMsgSize();
 	void printMsg();
 };

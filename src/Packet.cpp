@@ -62,6 +62,7 @@ int Packet::getSize() {
 
 void Packet::getMsg() {
 	unsigned char* message = new unsigned char[1 + 4 + 1+ dataSize + 1 + 1];
+	packetMessage = new unsigned char(9);
 		message[0] = SOH;
 		message[1] = frameNumber >> 24;
 		message[2] = frameNumber >> 16;

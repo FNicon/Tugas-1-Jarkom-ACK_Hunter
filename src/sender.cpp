@@ -22,7 +22,7 @@ socklen_t slen = sizeof(otherAddress);
 
 
 int sendSinglePacket(int thisSocket, Packet packet) {
-	packet.printMsg();
+	//packet.printMsg();
 	unsigned char ack[7];
 	unsigned char* packetToSend = new unsigned char(9);
 	int nextSeq = 0;
@@ -110,9 +110,9 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 		std::cout << "[sendData] Isi paket: " << payload << std::endl;
 
-		errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence,payload)));
-		//std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
-		//errorCode = fut.get();
+		//errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence,payload)));
+		std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
+		errorCode = fut.get();
 
 		if (errorCode == 0) {
 			windowPtr += payloadSize;

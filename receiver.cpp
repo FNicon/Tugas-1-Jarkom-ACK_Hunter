@@ -112,6 +112,7 @@ int main(int argc, char* argv[]) {
         	printf("[main] Data (hex): %x\n" , (char)recvData[6]);
 
         	CheckSum packetChecker(recvData);
+					sleep(1);
 
         	if (packetChecker.CheckSumValidation()) {
         		printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);

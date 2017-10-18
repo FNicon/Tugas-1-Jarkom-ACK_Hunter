@@ -117,7 +117,6 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 		std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
 		errorCode = fut.get();
-		usleep(800);
 
 		if (errorCode == 0) {
 			windowPtr += payloadSize;

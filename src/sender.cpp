@@ -75,11 +75,12 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 	int errorCode = 0;
 	char payload[payloadSize];
 	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
+		std::cout << "[moveWindow] Window Pointer: " << windowPtr << " - " << windowPtr + windowSize * payloadSize << std::endl;
 		std::vector<std::future<int>> threadRes;
 		int tempWindowPtr = windowPtr;
 		int tempSequence = sequence;
 		int tempPackageCount = packageCount;
-		while (tempWindowPtr < tempWindowPtr + windowSize * payloadSize && tempWindowPtr < dataLength) {
+		while (tempWindowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
 			if (tempSequence >= maxSequence) {
 				tempSequence = 0;
 			}
@@ -95,7 +96,6 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 			tempWindowPtr += payloadSize;
 			tempSequence++;
 			tempPackageCount++;
-			std::cout << "[moveWindow] Window Pointer: " << tempWindowPtr << " - " << tempWindowPtr + windowSize * payloadSize << std::endl;
 		}
 		int checkCounter = 0;
 		for (auto& fut : threadRes) {
@@ -106,7 +106,6 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 				break;
 		}
 		windowPtr = windowPtr + payloadSize * checkCounter;
-		
 		/*
 		if (sequence >= maxSequence) {
 			sequence = 0;

@@ -53,6 +53,11 @@ int handshake(int thisSocket, const int* RWS) {
 
 	return (SWS + *RWS + 1);
 }
+void randomSleep() {
+	int randomTime;
+	randomTime = rand() % 20000;
+	usleep(randomTime);
+}
 
 int main(int argc, char* argv[]) {
 	if (argc != 5) {
@@ -127,13 +132,16 @@ int main(int argc, char* argv[]) {
 
 				CheckSum packetChecker(recvData);
 				printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
-				usleep(20000);
+				//usleep(20000);
+				randomSleep();
 
 				if (packetChecker.CheckSumValidation(recvData)) {
 					sendAck(mySocket, recvData, maxSequence);
 					bufferToWrite[bufferPtr] = recvData[6];
 					std::cout << "[bufferRead] buffer receiver : ";
-					std::cout << bufferToWrite[bufferPtr];
+					for (int i = 0; i<=bufferPtr; i++) {
+						std::cout << bufferToWrite[i] << " ";
+					}
 					std::cout<<std::endl;
 					bufferPtr++;
 				}

@@ -47,7 +47,7 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	nextSeq = (nextSeq ^ ack[2]) << 8;
 	nextSeq = (nextSeq ^ ack[3]) << 8;
 	nextSeq = (nextSeq ^ ack[4]);
-	if (nextSeq == LAR + 1 /*--> nextSeq == LAR + 1*/) {
+	if (nextSeq == packet.getFrameNumber() + 1 /*--> nextSeq == LAR + 1*/) {
 		std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
 		offeredWindow = ack[5];
 		LAR = nextSeq;
@@ -86,13 +86,13 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 	LAR = -1; //Last Acknowledgement received
 	LFS = -1; //Last Frame Sent
 
-	while (windowPtr < windowPtr + offeredWindow /*--> offeredWindow*/ * payloadSize && windowPtr < dataLength) {
+	while (windowPtr < windowPtr + windowSize /*--> offeredWindow*/ * payloadSize && windowPtr < dataLength) {
 		std::cout << "[moveWindow] Window Pointer: " << windowPtr << " - " << windowPtr + windowSize * payloadSize << std::endl;
 		std::vector<std::future<int>> threadRes;
 		int tempWindowPtr = windowPtr;
 		int tempSequence = sequence;
 		int tempPackageCount = packageCount;
-		while (tempWindowPtr < windowPtr + offeredWindow /**--> offeredWindow*/ * payloadSize && tempWindowPtr /*Harusnya tempwindow?*/ < dataLength) {
+		while (tempWindowPtr < windowPtr + windowSize /**--> offeredWindow*/ * payloadSize && tempWindowPtr /*Harusnya tempwindow?*/ < dataLength) {
 			if (tempSequence >= maxSequence) {
 				tempSequence = 0;
 			}

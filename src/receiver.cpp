@@ -113,8 +113,11 @@ int main(int argc, char* argv[]) {
 		// std::cout << "RWS: " << maxSequence << std::endl;
 			sleep(1);
 		}
-		//char tempBuffer[bufferSize];
-		//char* tempBuffer = new char[bufferSize];
+		char tempBuffer[windowSize];
+		for (int initCount=0;initCount<windowSize;initCount++) {
+			tempBuffer[initCount] = 0;
+		}
+		int counterReceived = 0;
 		while (!finished) {
 			std::cout << "Waiting for data..." << std::endl;
 			fflush(stdout);
@@ -126,7 +129,7 @@ int main(int argc, char* argv[]) {
 				timeoutCount++;
 				continue;
 			} else {
-				int currentSeq;
+				int currentSeq = 0;
 				printf("=============================\n");
 				printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
 				printf("[main] Data (hex): %x\n" ,recvData[6]);
@@ -140,7 +143,8 @@ int main(int argc, char* argv[]) {
 					currentSeq = (currentSeq ^ recvData[2]) << 8;
 					currentSeq = (currentSeq ^ recvData[3]) << 8;
 					currentSeq = (currentSeq ^ recvData[4]);
-					//tempBuffer[currentSeq] = recvData[6];
+					tempBuffer[currentSeq] = recvData[6];
+					counterReceived = counterReceived + 1;
 					sendAck(mySocket, recvData, maxSequence);
 					//bufferToWrite[bufferPtr] = recvData[6];
 					//std::cout << "[bufferRead] buffer receiver : ";
@@ -152,7 +156,20 @@ int main(int argc, char* argv[]) {
 				} else {
 					std::cout << "[main] Received Package content was corrupt." << std::endl;
 				}
-
+				//printf("pointer %d\n",bufferPtr);
+				//printf("=============counter : %d\n",counterReceived);
+				if (counterReceived >= windowSize) {
+					for (int j=bufferPtr;j<=bufferPtr+counterReceived;j++) {
+						bufferToWrite[j] = tempBuffer[j];
+					}
+					std::cout << "[bufferRead] buffer receiver : ";
+					for (int i = 0; i<=bufferPtr; i++) {
+						std::cout << bufferToWrite[i] << " ";
+					}
+					std::cout<<std::endl;
+					bufferPtr=bufferPtr+counterReceived;
+					counterReceived = 0;
+				}
 				if (bufferPtr >= bufferSize) {
 					std::cout << "[bufferWrite] buffer to Write : ";
 					for (int i = 0; i < bufferSize; i++) {

@@ -76,6 +76,37 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 	int errorCode = 0;
 	char payload[payloadSize];
 	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
+		std::vector<std::future<int>> threadRes;
+		int tempWindowPtr = windowPtr;
+		int tempSequence = sequence;
+		int tempPackageCount = packageCount;
+		while (tempWindowPtr < tempWindowPtr + windowSize * payloadSize && tempWindowPtr < dataLength) {
+			if (tempSequence >= maxSequence) {
+				tempSequence = 0;
+			}
+			std::cout << "[sendData] Mengirim paket ke-" << tempPackageCount << std::endl;
+			std::cout << "[sendData] Sequence paket: " << tempSequence << std::endl;
+
+			for (int j = 0; j < payloadSize && j < dataLength; j++) {
+				payload[j] = data[bufferPtr];
+				bufferPtr++;
+			}
+			std::cout << "[sendData] Isi paket: " << payload << std::endl;
+			threadRes.push_back(std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload))));
+			tempWindowPtr += payloadSize;
+			tempSequence++;
+			tempPackageCount++;
+		}
+		int checkCounter = 0;
+		for (auto& fut : threadRes) {
+			++sequence;
+			++tempPackageCount;
+			++checkCounter;
+			if (fut.get()!=0)
+				break;
+		}
+		windowPtr = windowPtr + payloadSize * checkCounter;
+		/*
 		if (sequence >= maxSequence) {
 			sequence = 0;
 		}
@@ -90,12 +121,15 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 		std::cout << "[sendData] Isi paket: " << payload << std::endl;
 		//errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence,payload)));
 		std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
+		//std::future<int> fut2 = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
 		errorCode = fut.get();
+		//int errorDummy = fut2.get();
+
 		if (errorCode == 0) {
 			windowPtr += payloadSize;
 			sequence++;
 			packageCount++;
-		}
+		}*/
 	}
 
 }

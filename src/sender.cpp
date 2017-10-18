@@ -18,6 +18,9 @@
 struct sockaddr_in otherAddress;
 
 socklen_t slen = sizeof(otherAddress);
+int LAR;
+int LFS;
+int offeredWindow;
 
 
 int sendSinglePacket(int thisSocket, Packet packet) {
@@ -44,9 +47,11 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	nextSeq = (nextSeq ^ ack[2]) << 8;
 	nextSeq = (nextSeq ^ ack[3]) << 8;
 	nextSeq = (nextSeq ^ ack[4]);
-	if (nextSeq == packet.getFrameNumber() + 1)
+	if (nextSeq == packet.getFrameNumber() + 1 /*--> nextSeq == LAR + 1*/) {
 		std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
-	else {
+		//--> offeredWindow = ack[5];
+		//--> LAR++;
+	} else {
 		std::cout << "Ack Number false!" << nextSeq << std::endl << std::endl;
 		return -2;
 	}
@@ -74,13 +79,20 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 	int packageCount = 0;
 	int errorCode = 0;
 	char payload[payloadSize];
-	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
+
+
+	//Tambahan Variabel
+	offeredWindow = windowSize;
+	LAR = -1 //Last Acknowledgement received
+	LFS = -1; //Last Frame Sent
+
+	while (windowPtr < windowPtr + windowSize /*--> offeredWindow*/ * payloadSize && windowPtr < dataLength) {
 		std::cout << "[moveWindow] Window Pointer: " << windowPtr << " - " << windowPtr + windowSize * payloadSize << std::endl;
 		std::vector<std::future<int>> threadRes;
 		int tempWindowPtr = windowPtr;
 		int tempSequence = sequence;
 		int tempPackageCount = packageCount;
-		while (tempWindowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
+		while (tempWindowPtr < windowPtr + windowSize /**--> offeredWindow*/ * payloadSize && windowPtr /*Harusnya tempwindow?*/ < dataLength) {
 			if (tempSequence >= maxSequence) {
 				tempSequence = 0;
 			}
@@ -93,6 +105,7 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 			}
 			std::cout << "[sendData] Isi paket: " << payload << std::endl;
 			threadRes.push_back(std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload))));
+			//--> LFS = tempWindowPtr;
 			tempWindowPtr += payloadSize;
 			tempSequence++;
 			tempPackageCount++;

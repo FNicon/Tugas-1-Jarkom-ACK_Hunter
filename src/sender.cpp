@@ -15,7 +15,6 @@
 #include "CheckSum.h"
 
 #define PORT 8888
-
 struct sockaddr_in otherAddress;
 
 socklen_t slen = sizeof(otherAddress);
@@ -96,6 +95,7 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 			tempWindowPtr += payloadSize;
 			tempSequence++;
 			tempPackageCount++;
+			std::cout << "[moveWindow] Window Pointer: " << tempWindowPtr << " - " << tempWindowPtr + windowSize * payloadSize << std::endl;
 		}
 		int checkCounter = 0;
 		for (auto& fut : threadRes) {
@@ -106,6 +106,7 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 				break;
 		}
 		windowPtr = windowPtr + payloadSize * checkCounter;
+		
 		/*
 		if (sequence >= maxSequence) {
 			sequence = 0;
@@ -178,23 +179,26 @@ int main(int argc, char* argv[]) {
 			dataLength = 0;
 			std::cout << "[main] Iterasi " << iterasi << std::endl;
 			i = 0;
+			std::cout << "[bufferRead] buffer sender : ";
 			while (i < bufferSize && !fin.eof()) {
 				fin >> std::noskipws >> buffer[i];
 				dataLength++;
 				i++;
+				std::cout << buffer[i] << " ";
 			}
+			std::cout<<std::endl;
 			sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
 			memset(buffer, 0, bufferSize);
 			iterasi++;
 		}
-		if (fin.eof()) {
-			buffer[i] = 255;
-			dataLength++;
-			i++;
-			sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
-			memset(buffer, 0, bufferSize);
+		//if (fin.eof()) {
+			//buffer[i] = 255;
+			//dataLength++;
+			//i++;
+			//sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
+			//memset(buffer, 0, bufferSize);
 			//printf("%x\n",buffer[0]);
-		}
+		//}
 		fin.close();
 		std::cout << "Selesai!" << std::endl;
 		close(thisSocket);

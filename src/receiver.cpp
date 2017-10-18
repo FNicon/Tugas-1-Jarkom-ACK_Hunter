@@ -11,6 +11,8 @@
 #include "CheckSum.h"
 
 struct sockaddr_in myAddr, otherAddr;
+bool succesSentHandshake;
+bool succesReceiveHandshake;
 int ackCount = 0;
 socklen_t slen = sizeof(otherAddr);
 
@@ -39,10 +41,14 @@ int handshake(int thisSocket, const int* RWS) {
 	fflush(stdout);
 	if (recvfrom(thisSocket, &SWS, sizeof(SWS), 0, (struct sockaddr *) &otherAddr, &slen) == -1){
 		std::cout << "Failed to receive handshake" << std::endl;
+	} else {
+		succesReceiveHandshake = true;
 	}
 
 	if (sendto(thisSocket, RWS, sizeof(RWS), 0 , (struct sockaddr *) &otherAddr, sizeof(otherAddr))==-1) {
 		std::cout << "Failed to send handshake reply" << std::endl;
+	} else {
+		succesSentHandshake = true;
 	}
 
 	return (SWS + *RWS + 1);
@@ -53,6 +59,8 @@ int main(int argc, char* argv[]) {
 		std::cout << "Usage : ./recvfile <file name> <window size> <buffer size> <port>" << std::endl;
 		return 0;
 	} else {
+		succesSentHandshake = false;
+		succesReceiveHandshake = false;
 		struct timeval timeoutVal;
 		timeoutVal.tv_sec = 2;
 		timeoutVal.tv_usec = 0;
@@ -94,60 +102,63 @@ int main(int argc, char* argv[]) {
 
 		std::ofstream fout;
 		fout.open(fileName);
-
-		std::cout << "Waiting for handshake..." << std::endl;
-		int maxSequence = handshake(mySocket, &windowSize);
+		int maxSequence = 0;
+		while (!(succesSentHandshake && succesReceiveHandshake)) {
+			std::cout << "Waiting for handshake..." << std::endl;
+			maxSequence = handshake(mySocket, &windowSize);
 		// std::cout << "RWS: " << maxSequence << std::endl;
-		sleep(1);
-		// {
-		// 	char ch;
-		// 	std::cin >> ch;
-		// }
+			sleep(1);
+		}
 
 		while (!finished) {
-			if (timeoutCount >=5)
-				exit(1);
 			std::cout << "Waiting for data..." << std::endl;
 			fflush(stdout);
-
 			memset(recvData, 0, bufferSize);
-
-			if ((recvfrom(mySocket, recvData, bufferSize, 0, (struct sockaddr *) &otherAddr, &slen)) == -1) {
+			if (timeoutCount >= 5) {
+				finished = true;
+			} else if ((recvfrom(mySocket, recvData, bufferSize, 0, (struct sockaddr *) &otherAddr, &slen)) == -1) {
 				std::cout << "Failed to receive data" << std::endl;
 				timeoutCount++;
 				continue;
-			}
+			} else {
+				printf("=============================\n");
+				printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
+				printf("[main] Data (hex): %x\n" ,recvData[6]);
 
-			printf("=============================\n");
-			printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
-			printf("[main] Data (hex): %x\n" ,recvData[6]);
+				CheckSum packetChecker(recvData);
+				printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
+				usleep(20000);
 
-			CheckSum packetChecker(recvData);
-			printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
-			usleep(20000);
-
-			if (packetChecker.CheckSumValidation(recvData)) {
-				sendAck(mySocket, recvData, maxSequence);
-				bufferToWrite[bufferPtr] = recvData[6];
-				bufferPtr++;
-			}
-
-			if (bufferPtr >= bufferSize) {
-				for (int i = 0; i < bufferSize; i++) {
-					fout << bufferToWrite[i];
+				if (packetChecker.CheckSumValidation(recvData)) {
+					sendAck(mySocket, recvData, maxSequence);
+					bufferToWrite[bufferPtr] = recvData[6];
+					std::cout << "[bufferRead] buffer receiver : ";
+					std::cout << bufferToWrite[bufferPtr];
+					std::cout<<std::endl;
+					bufferPtr++;
 				}
-				memset(bufferToWrite, 0, bufferSize);
-				bufferPtr = 0;
-			}
 
-			if (recvData[6] == 255) {
+				if (bufferPtr >= bufferSize) {
+					std::cout << "[bufferWrite] buffer to Write : ";
+					for (int i = 0; i < bufferSize; i++) {
+						fout << bufferToWrite[i];
+						std::cout << bufferToWrite[i] << " ";
+					}
+					std::cout<<std::endl;
+					memset(bufferToWrite, 0, bufferSize);
+					bufferPtr = 0;
+				}
+			}
+			if (finished) {
 				int i = 0;
+				std::cout << "[bufferWrite] buffer to Write : ";
 				while (bufferToWrite[i] != 0) {
+					std::cout << bufferToWrite[i] << " ";
 					fout << bufferToWrite[i];
 					i++;
 				}
-				finished = true;
-				std::cout << "[main] Finished! closing socket now..." << std::endl;
+				std::cout<<std::endl;
+				std::cout << "[main] No data sent. closing socket now..." << std::endl;
 			}
 			//std::cout << "loop entered but no condition met.." << std::endl;
 		}

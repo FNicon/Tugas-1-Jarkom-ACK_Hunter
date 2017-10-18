@@ -22,14 +22,15 @@ Sumber:
   - http://cseweb.ucsd.edu/~gmporter/classes/wi15/cse124/lectures/lecture5.pdf
   - http://www.brianstorti.com/tcp-flow-control/
 
-2.
+2. Sebuah TCP header memiliki ukuran setidaknya 5 x 32 bit = 160 bit. Field yang terdapat pada sebuah TCP header diilustrasikan dengan gambar berikut:
 ![TCH header picture](/img/TCPheader.jpg)
-  - Field SrcPort dan DstPort mengidentifikasi port asal dan tujuan. Kombinasi nomor port dan alamat IP merupakan identitas unik dari sebuah koneksi TCP.
-  - SequenceNum mengandung nomor urut dari byte pertama data dalam segment.
-  - Acknowledgement dan AdvertisedWindow mengandung informasi tentang alur pengiriman data yang datang dan keluar.
-  - Field Flags berukuran 6 bit digunakan untuk memberi informasi kontrol antara sesama TCP. Contoh yang bisa dimasukkan ke field ini adalah flag SYN dan FIN (untuk memulai dan menutup konesksi TCP), RESET (menandakan receiver menerima paket yang tidak sesuai dan ingin menutup koneksi), PUSH, URG (menandakan bahwa sebuah segmen memilki data penting), dan ACK.
-  - Checksum digunakan untuk mengecek apakah data yang dikirim tidak rusak.
-  - Karena ukuran header TCP bisa bervariasi (dengan manambahkan options setelah field wajib, HdrLen memberitahu panjang header dalam huruf berukuran 32 bit.
+  - Field SrcPort dan DstPort (masing-masing 16-bit) mengidentifikasi port asal dan tujuan. Kombinasi nomor port dan alamat IP merupakan identitas unik dari sebuah koneksi TCP.
+  - SequenceNum (32-bit) mengandung nomor urut dari byte pertama data dalam segment.
+  - Acknowledgement (32-bit) dan AdvertisedWindow (16-bit) mengandung informasi tentang alur pengiriman data yang datang dan keluar.
+  - Field Flags (berukuran 6 bit) digunakan untuk memberi informasi kontrol antara sesama TCP. Contoh yang bisa dimasukkan ke field ini adalah flag SYN dan FIN (untuk memulai dan menutup konesksi TCP), RESET (menandakan receiver menerima paket yang tidak sesuai dan ingin menutup koneksi), PUSH, URG (menandakan bahwa sebuah segmen memilki data penting), dan ACK.
+  - Jika flag URG di set, maka UrgPtr (16-bit) akan memberitahu di bagian mana data yang **tidak** penting dimulai dalam badan data.
+  - Checksum(6-bit) digunakan untuk mengecek apakah data yang dikirim tidak rusak.
+  - Karena ukuran header TCP bisa bervariasi (dengan manambahkan options setelah field wajib, HdrLen (4-bit) memberitahu panjang header dalam huruf berukuran 32 bit.
   
 Sumber: 
   - Computer Networks a System Approach 5th edition (page 400)

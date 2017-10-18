@@ -23,11 +23,10 @@ void sendAck(int sock, unsigned char* recvData, int maxSequence) {
 	Ack reply(recvData, recvSeq);
 	reply.printAck();
 	// std::cout << "sigh... " << recvSeq << std::endl;
-	 if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1)
-    {
-        std::cout << "Gagal mengirim ack ke-?" << std::endl;
-        exit(1);
-    }
+	if (sendto(sock, reply.getAck(), sizeof(reply.getAck()), 0, (struct sockaddr*) &otherAddr, sizeof(otherAddr)) == -1){
+		std::cout << "Gagal mengirim ack ke-?" << std::endl;
+		exit(1);
+	}
 }
 
 // void writeToFile(char* bufferToWrite, std::ofstream targetFile, ) {
@@ -70,9 +69,9 @@ int main(int argc, char* argv[]) {
 		unsigned char recvData[bufferSize];
 
 		if ((mySocket=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
-	        std::cout << "Failed to create socket" << std::endl;
+			std::cout << "Failed to create socket" << std::endl;
 			exit(1);
-	    }
+		}
 
 		memset((char*) &myAddr, 0, sizeof(myAddr));
 		myAddr.sin_family = AF_INET;
@@ -109,35 +108,35 @@ int main(int argc, char* argv[]) {
 
 			printf("=============================\n");
 			printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
-        	printf("[main] Data (hex): %x\n" , (char)recvData[6]);
+			printf("[main] Data (hex): %x\n" , (char)recvData[6]);
 
-        	CheckSum packetChecker(recvData);
-					sleep(1);
+			CheckSum packetChecker(recvData);
+			sleep(1);
 
-        	if (packetChecker.CheckSumValidation()) {
-        		printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
-        		sendAck(mySocket, recvData, maxSequence);
-        		bufferToWrite[bufferPtr] = recvData[6];
-        		bufferPtr++;
-        	}
+			if (packetChecker.CheckSumValidation(recvData)) {
+				printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
+				sendAck(mySocket, recvData, maxSequence);
+				bufferToWrite[bufferPtr] = recvData[6];
+				bufferPtr++;
+			}
 
-        	if (bufferPtr >= bufferSize) {
-        		for (int i = 0; i < bufferSize; i++) {
-        			fout << bufferToWrite[i];
-        		}
-        		memset(bufferToWrite, 0, bufferSize);
-        		bufferPtr = 0;
-        	}
+			if (bufferPtr >= bufferSize) {
+				for (int i = 0; i < bufferSize; i++) {
+					fout << bufferToWrite[i];
+				}
+				memset(bufferToWrite, 0, bufferSize);
+				bufferPtr = 0;
+			}
 
-        	if (recvData[6] == 224) {
-        		int i = 0;
-        		while (bufferToWrite[i] != 0) {
-        			fout << bufferToWrite[i];
-        			i++;
-        		}
-        		finished = true;
-        		std::cout << "[main] Finished! closing socket now..." << std::endl;
-        	}
+			if (recvData[6] == 224) {
+				int i = 0;
+				while (bufferToWrite[i] != 0) {
+					fout << bufferToWrite[i];
+					i++;
+				}
+				finished = true;
+				std::cout << "[main] Finished! closing socket now..." << std::endl;
+			}
 		}
 
 		fout.close();

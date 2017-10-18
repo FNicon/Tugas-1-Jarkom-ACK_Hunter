@@ -25,8 +25,13 @@ socklen_t slen = sizeof(otherAddress);
  */
 int sendSinglePacket(int thisSocket, Packet packet) {
 	unsigned char ack[7];
+	unsigned char* packetToSend = new unsigned char(9);
 	int nextSeq = 0;
-	if (sendto(thisSocket, packet.getMsg(), sizeof(packet.getMsg()), 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
+	packet.getMsg();
+	for (int i=0;i<sizeof(packet.getPacketMessage());i++) {
+		packetToSend[i] = packet.getPacketMessage()[i];	
+	}
+	if (sendto(thisSocket, packetToSend, sizeof(packetToSend)+1, 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
 		std::cout << "Failed to send packet number-" << packet.getFrameNumber() << std::endl;
 		return 1;
 	}

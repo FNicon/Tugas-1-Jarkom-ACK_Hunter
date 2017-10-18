@@ -93,7 +93,7 @@ void Packet::getMsg() {
 
 		// check.BuildCheckSum();
 		// sprintf(message,"%s%c",message,check.getCheckSum());
-		return message;
+		//return message;
 }
 unsigned char* Packet::getPacketMessage() {
 	return (packetMessage);

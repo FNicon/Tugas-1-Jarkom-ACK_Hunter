@@ -24,12 +24,13 @@ socklen_t slen = sizeof(otherAddress);
  * WIP Error message
  */
 int sendSinglePacket(int thisSocket, Packet packet) {
+	packet.printMsg();
 	unsigned char ack[7];
 	unsigned char* packetToSend = new unsigned char(9);
 	int nextSeq = 0;
 	packet.getMsg();
-	for (int i=0;i<sizeof(packet.getPacketMessage());i++) {
-		packetToSend[i] = packet.getPacketMessage()[i];	
+	for (int i=0;i<=sizeof(packet.getPacketMessage());i++) {
+		packetToSend[i] = packet.getPacketMessage()[i];
 	}
 	if (sendto(thisSocket, packetToSend, sizeof(packetToSend)+1, 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
 		std::cout << "Failed to send packet number-" << packet.getFrameNumber() << std::endl;
@@ -56,8 +57,12 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 
 	nextSeq = (nextSeq ^ ack[4]);
 	// printf("[sendSinglePacket] Empat: %x\n", ack[4]);
-
-	std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
+	if (nextSeq == packet.getFrameNumber() + 1)
+		std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
+	else {
+		std::cout << "Ack Number false!" << nextSeq << std::endl << std::endl;
+		return -2;
+	}
 	return 0;
 }
 
@@ -120,8 +125,9 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 		std::cout << "[sendData] Isi paket: " << payload << std::endl;
 
-		std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
-		errorCode = fut.get();
+		errorCode = sendSinglePacket(thisSocket, *(new Packet(sequence,payload)));
+		//std::future<int> fut = std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload)));
+		//errorCode = fut.get();
 
 		if (errorCode == 0) {
 			windowPtr += payloadSize;

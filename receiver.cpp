@@ -111,10 +111,10 @@ int main(int argc, char* argv[]) {
 			printf("[main] Data (hex): %x\n" , (char)recvData[6]);
 
 			CheckSum packetChecker(recvData);
-			sleep(1);
+			printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
+			//sleep(1);
 
 			if (packetChecker.CheckSumValidation(recvData)) {
-				printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
 				sendAck(mySocket, recvData, maxSequence);
 				bufferToWrite[bufferPtr] = recvData[6];
 				bufferPtr++;
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 				bufferPtr = 0;
 			}
 
-			if (recvData[6] == 224) {
+			if (recvData[6] == 1) {
 				int i = 0;
 				while (bufferToWrite[i] != 0) {
 					fout << bufferToWrite[i];
@@ -137,6 +137,7 @@ int main(int argc, char* argv[]) {
 				finished = true;
 				std::cout << "[main] Finished! closing socket now..." << std::endl;
 			}
+			//std::cout << "loop entered but no condition met.." << std::endl;
 		}
 
 		fout.close();

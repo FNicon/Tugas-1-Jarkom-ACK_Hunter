@@ -14,7 +14,6 @@ void CheckSum::BuildCheckSum() {
 		checkSum = checkSum + packet[i];
 	}
 }
-
 bool CheckSum::CheckSumValidation(unsigned char* inputPacket) {
 	int i;
 	unsigned char tempCheckSum;

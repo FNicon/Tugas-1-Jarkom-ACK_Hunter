@@ -72,7 +72,22 @@ Sumber:
   - http://www.brianstorti.com/tcp-flow-control/
 
 2. Sebuah TCP header memiliki ukuran setidaknya 5 x 32 bit = 160 bit. Field yang terdapat pada sebuah TCP header diilustrasikan dengan gambar berikut:
-![TCH header picture](/img/TCPheader.jpg)
+
+|///////////////////// SrcPort (16-bit) /////////////////////|///////////////////// DstPort (16-bit) /////////////////////|
+
+
+|//////////////////////////////////////////////// SequenceNum (32-bit) ///////////////////////////////////////////////|
+
+|/////////////////////////////////////////// Acknowledgement (32-bit) ////////////////////////////////////////////////|
+
+
+|     HdrLen (4)        |      0 (4)        |    Flags (4)   |//////////////////// AdvWindow (16-bit) ////////////////////|
+
+|//////////////////// Checksum (16-bit) /////////////////////|///////////////////// UrgPtr  (16-bit) /////////////////////|
+
+
+|////////////////////////////////////////////////   Options            ///////////////////////////////////////////////|
+
   - Field SrcPort dan DstPort (masing-masing 16-bit) mengidentifikasi port asal dan tujuan. Kombinasi nomor port dan alamat IP merupakan identitas unik dari sebuah koneksi TCP.
   - SequenceNum (32-bit) mengandung nomor urut dari byte pertama data dalam segment.
   - Acknowledgement (32-bit) dan AdvertisedWindow (16-bit) mengandung informasi tentang alur pengiriman data yang datang dan keluar.

@@ -138,10 +138,12 @@ int main(int argc, char* argv[]) {
 	    int maxSequence = handshake(thisSocket, &windowSize);
 		sleep(1);
 		int iterasi = 1;
-		while (!fin.eof()) {
-			int dataLength = 0;
+		int i;
+		int dataLength;
+		while (!fin.eof()){
+			dataLength = 0;
 			std::cout << "[main] Iterasi " << iterasi << std::endl;
-			int i = 0;
+			i = 0;
 			while (i < bufferSize && !fin.eof()) {
 				fin >> std::noskipws >> buffer[i];
 				dataLength++;
@@ -150,6 +152,14 @@ int main(int argc, char* argv[]) {
 			sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
 			memset(buffer, 0, bufferSize);
 			iterasi++;
+		}
+		if (fin.eof()) {
+			buffer[i] = 255;
+			dataLength++;
+			i++;
+			sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
+			memset(buffer, 0, bufferSize);
+			//printf("%x\n",buffer[0]);
 		}
 		fin.close();
 		std::cout << "Selesai!" << std::endl;

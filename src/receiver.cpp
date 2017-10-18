@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 				bufferPtr = 0;
 			}
 
-			if (recvData[6] == 0x0) {
+			if (recvData[6] == 255) {
 				int i = 0;
 				while (bufferToWrite[i] != 0) {
 					fout << bufferToWrite[i];

@@ -1,5 +1,13 @@
 # Tugas-1-Jarkom-ACK_Hunter
 Tugas Jarkom untuk simulasi Sliding Windows
+
+Kelas K2 - Kelompok ACK
+
+Anggota:
+- 13515029 Finiko Kasula Novenda
+- 13515050 Muhammad Umar Fariz Tumbuan
+- 13515122 Alif Ijal W.
+
 ## Petunjuk penggunaan program
 1. Masukkan command "make" pada terminal pada linux di folder Tugas-1-Jarkom-ACK.
 2. Masukkan perintah "./recvfile <filename> <windowsize> <buffersize> <port>" untuk melakukan run pada receiver.
@@ -35,6 +43,24 @@ Fungsi ini dipanggil di dalam fungsi main dari receiver.cpp segera setelah recei
   
 ## Pembagian tugas
 <- Sampaikan dalam list pengerjaan untuk setiap mahasiswa. Sebagai contoh: XXXX mengerjakan fungsi YYYY, ZZZZ, dan YYZZ. ->
+
+- 13515029 Finiko:
+  - Membuat algoritma checksum di dalam sebuah kelas CheckSum
+  - Memperbaiki program awal agar dapat mengirim dan menerima data dengan benar dan terurut
+  - Memperbaharui program agar bisa mengirim file selain text
+  - Membuat log file dari proses pengiriman
+- 13515050 Fariz:
+  - Membuat versi awal dari sender.cpp dan receiver.cpp
+    - Pembuatan socket
+    - Iterasi buffer pengiriman di sendData
+    - Membaca dan menulis file
+    - Mengubah sebuah integer 4-byte menjadi 4 karakter 1-byte dan sebaliknya
+  - Membuat kelas Packet dan Ack
+- 13515122 Alif:
+  - Memperbaiki dan memperbaharui flow control di sender.cpp
+    - Membuat mekanisme Timeout menggunakan thread
+    - Membuat mekanisme pengecekan ack
+
 ## Pertanyaan
 1.	Apa yang terjadi jika advertised window yang dikirim bernilai 0? Apa cara untuk menangani hal tersebut?
 2.	Sebutkan field data yang terdapat TCP Header serta ukurannya, ilustrasikan, dan jelaskan kegunaan dari masing-masing field data tersebut!

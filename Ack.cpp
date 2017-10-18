@@ -28,8 +28,8 @@ Ack::Ack(unsigned char* receivedFrame) {
 	ack[5] = advWindow;
 	ack[6] = 0;
 	CheckSum check(ack);
-	check.BuildCheckSum_2();
-	ack[6] = check.getCheckSum_2();
+	check.BuildCheckSum();
+	ack[6] = check.getCheckSum();
 }
 
 Ack::Ack(unsigned char* receivedFrame, int sequence) {
@@ -58,8 +58,8 @@ Ack::Ack(unsigned char* receivedFrame, int sequence) {
 	ack[5] = advWindow;
 	ack[6] = 0;
 	CheckSum check(ack);
-	check.BuildCheckSum_2();
-	ack[6] = check.getCheckSum_2();
+	check.BuildCheckSum();
+	ack[6] = check.getCheckSum();
 }
 
 char Ack::getStatus() {

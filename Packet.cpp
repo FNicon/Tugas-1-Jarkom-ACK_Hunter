@@ -72,8 +72,11 @@ unsigned char* Packet::getMsg() {
 		message[7] = ETX;
 		message[8] = 0;
 		CheckSum check(message);
-		message[8] = check.getCheckSum_2();
-
+		check.BuildCheckSum();
+		message[8] = check.getCheckSum();
+		for (int i = 0;i<=sizeof(message);i++) {
+			packetMessage[i] = message[i];
+		}
 
 		// sprintf (message, "%c%c%c%c%c", SOH, (frameNumber & 0xff000000) >> 24, (frameNumber & 0xff0000) >> 16, (frameNumber & 0xff00) >> 8, (frameNumber & 0xff));
 		// // if (frameNumber > 999) {
@@ -92,11 +95,15 @@ unsigned char* Packet::getMsg() {
 		// sprintf(message,"%s%c",message,check.getCheckSum());
 		return message;
 }
+unsigned char* Packet::getPacketMessage() {
+	return (packetMessage);
+}
 
 int Packet::getMsgSize() {
 	return (1 + 4 + 1 + dataSize + 1 + 1);
 }
 
 void Packet::printMsg() {
-	printf ("[Packet.cpp] package content (hex): %x %x %x %x %x %x %x %x %x\n", this->getMsg()[0], this->getMsg()[1], this->getMsg()[2], this->getMsg()[3], this->getMsg()[4], this->getMsg()[5], this->getMsg()[6], this->getMsg()[7], this->getMsg()[8]);
+	printf ("[Packet.cpp] package content (hex): %x %x %x %x %x %x %x %x %x\n", packetMessage[0], packetMessage[1], packetMessage[2], packetMessage[3], packetMessage[4], packetMessage[5], packetMessage[6], packetMessage[7], packetMessage[8]);
+	//printf ("[Packet.cpp] package content (hex): %x %x %x %x %x %x %x %x %x\n", this->getMsg()[0], this->getMsg()[1], this->getMsg()[2], this->getMsg()[3], this->getMsg()[4], this->getMsg()[5], this->getMsg()[6], this->getMsg()[7], this->getMsg()[8]);
 }

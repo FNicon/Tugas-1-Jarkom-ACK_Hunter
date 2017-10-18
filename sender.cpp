@@ -20,9 +20,7 @@ struct sockaddr_in otherAddress;
 
 socklen_t slen = sizeof(otherAddress);
 
-/* Mengirim pesan dan menerima Ack.
- * WIP Error message
- */
+
 int sendSinglePacket(int thisSocket, Packet packet) {
 	packet.printMsg();
 	unsigned char ack[7];
@@ -81,20 +79,7 @@ int handshake(int thisSocket, const int* SWS) {
 }
 
 
-// int sendSingleSegment(int thisSocket, segment* seg) {
-// 	char ack[7];
-// 	printf ("[sendSingleSegment] readable format: %c%s%c%c%c%c\n", seg->soh, seg->seqNum, seg->stx, seg->data, seg->etx, seg->checksum);
 
-// 	if (sendto(thisSocket, seg, 9, 0 , (struct sockaddr *) &otherAddress, sizeof(otherAddress))==-1) {
-// 		std::cout << "Failed to send packet number-" << seg->seqNum << std::endl;
-// 	}
-
-// 	if (recvfrom(thisSocket, ack, 7, 0, (struct sockaddr *) &otherAddress, &slen) == -1){
-// 		std::cout << "Failed to receive ack-" << std::endl;
-// 	}
-
-// 	std::cout << "[sendSingleSegment] Next sequence: " << ack << std::endl << std::endl;
-// }
 
 void sendData(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize, int maxSequence) {
 	bool acked = false;
@@ -138,59 +123,12 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 }
 
-// void sendAllSegment(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize) {
-// 	bool acked = false;
 
-// 	int windowPtr = 0;
-// 	int bufferPtr = 0;
-// 	int sequence = 0;
-// 	int expectedAck = 0;
-// 	int maxSequence = windowSize * 2;
-// 	int lastAckRecv;
-// 	int packageCount = 0;
-
-
-// 	while (windowPtr < windowPtr + windowSize * payloadSize && windowPtr < dataLength) {
-// 		if (sequence >= maxSequence) {
-// 			sequence = 0;
-// 		}
-// 		std::cout << "[sendAllSegment] Mengirim segment ke-" << ++packageCount << std::endl;
-// 		std::cout << "[sendAllSegment] Sequence segment: " << sequence << std::endl;
-
-// 		char payload[payloadSize];
-// 		for (int j = 0; j < payloadSize && j < dataLength; j++) {
-// 			payload[j] = data[bufferPtr];
-// 			bufferPtr++;
-// 		}
-
-// 		std::cout << "[sendAllSegment] Isi segment: " << payload << std::endl;
-
-// 		segment segmentToSend;
-// 		segmentToSend.soh = SOH;
-// 		segmentToSend.seqNum[0] = (sequence & 0xFF000000) >> 24;
-// 		segmentToSend.seqNum[1] = (sequence & 0xFF0000) >> 16;
-// 		segmentToSend.seqNum[2] = (sequence & 0xFF00) >> 8;
-// 		segmentToSend.seqNum[3] = (sequence & 0xFF);
-// 		segmentToSend.stx = STX;
-// 		segmentToSend.data = payload[0];
-// 		segmentToSend.etx = ETX;
-// 		std::cout << "[sendAllSegment] Sizeof segment: " << sizeof(segmentToSend) << std::endl;
-// 		CheckSum check(&segmentToSend);
-// 		segmentToSend.checksum = (check.getCheckSum());
-
-// 		sendSingleSegment(thisSocket, &segmentToSend);
-// 		usleep(1000);
-
-// 		windowPtr += payloadSize;
-// 		sequence++;
-// 	}
-
-// }
 
 int main(int argc, char* argv[]) {
 	struct timeval timeoutVal;
-	timeoutVal.tv_sec = 0;                            //0 secs
-	timeoutVal.tv_usec = 800;                       //2000 us
+	timeoutVal.tv_sec = 2;
+	timeoutVal.tv_usec = 0;
 
 	if (argc != 6) {
 		std::cout << "Usage : ./sendfile <file name> <window size> <buffer size> <destination ip> <destination port>" << std::endl;
@@ -251,7 +189,6 @@ int main(int argc, char* argv[]) {
 			}
 
 			sendData(thisSocket, buffer, dataLength, windowSize, 1, maxSequence);
-			// sendAllSegment(thisSocket, buffer, dataLength, windowSize, 1);
 			memset(buffer, 0, bufferSize);
 			iterasi++;
 		}

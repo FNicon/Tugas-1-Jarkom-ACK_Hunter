@@ -112,7 +112,7 @@ int main(int argc, char* argv[]) {
 
 			CheckSum packetChecker(recvData);
 			printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
-			//sleep(1);
+			usleep(20000);
 
 			if (packetChecker.CheckSumValidation(recvData)) {
 				sendAck(mySocket, recvData, maxSequence);

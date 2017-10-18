@@ -9,7 +9,30 @@ Contoh run :
 Receiver  : ./recvfile recv_file.txt 5 256 8888
 Sender    : ./sendfile test_file.txt 5 256 127.0.0.1 8888
 ## Cara kerja sliding window dalam program
-<- Jelaskan juga fungsi yang terkait dengan sliding window pada program anda dan apa yang dilakukan oleh fungsi tersebut.->
+- handshake(int thisSocket, const int* SWS):
+
+Koneksi antara sender dan receiver dimulai dengan saling mengirimkan window size. Informasi window size akan digunakan untuk menentukan nilai MaxSequence = RWS + SWS + 1
+  
+- sendSinglePacket(int thisSocket, Packet packet) //**sender.cpp**
+
+Fungsi ini akan mengambil array of unsigned char berukuran 9 byte dari sebuah objek Paket dan mengirimkan array tersebut ke port yang sudah diset di socket input. Dalam paket itu sudah berisi SOH (1 byte), sequence Number (4 byte), STX (1 byte), data (1 byte), ETX (1 byte), dan checksum (1 byte). Fungsi ini kemudian lanjut menunggu balasan ack dari port tujuan.
+
+- sendData(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize, int maxSequence) //**sender.cpp**
+
+Di sini flow control dengan window size dilakukan. Fungsi menerima array char yang akan dikirim. Pada fungsi ada sebuah "pointer" yang menunjukkan mulai darimana isi array yang akan dikirim. Pointer akan bergerak sesuai dengan ukuran window dan ukuran payload tiap paket (dalam kasus ini 1-byte). 
+
+Kemudian akan dibuat vector::future<int>. Paket sejumlah window size akan dikirimkan dalam thread terpisah dan ditrack dalam vector tersebut. Jika mendapat ack yang sesuai, maka sequence akan ditambah. Tapi jika terjadi timeout, proses akan diulangi kembali dari pembuatan thread dll.
+  
+\*Penghitungan timeout dilakukan dengan mengeset waktu timeout dari socket.
+  
+Pengiriman yang sukses akan dilanjutkan dengan menambahkan pointer buffer sebanyak windowSize * payload Size.
+
+- sendAck(int sock, usigned char* recvdata, int maxSequence) **//receiver.cpp**
+
+Fungsi ini akan mengirim ack berdasarkan data yang diterima dari sender (yaitu parameter recvdata). Pertama fungsi akan membuat sebuah objek Ack yang kemudian diambil array unsigned char yang merupakan ACK yang akan dikirim.
+
+Fungsi ini dipanggil di dalam fungsi main dari receiver.cpp segera setelah receiver menerima sebuah paket yang valid. Paket yang valid disimpan dalam sebuah buffer untuk ditulis ke dalam file.
+  
 ## Pembagian tugas
 <- Sampaikan dalam list pengerjaan untuk setiap mahasiswa. Sebagai contoh: XXXX mengerjakan fungsi YYYY, ZZZZ, dan YYZZ. ->
 ## Pertanyaan

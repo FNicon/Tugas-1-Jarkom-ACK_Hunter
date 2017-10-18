@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
 			printf("=============================\n");
 			printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
-			printf("[main] Data (hex): %x\n" , (char)recvData[6]);
+			printf("[main] Data (hex): %x\n" ,recvData[6]);
 
 			CheckSum packetChecker(recvData);
 			printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 				bufferPtr = 0;
 			}
 
-			if (recvData[6] == 0) {
+			if (recvData[6] == 255) {
 				int i = 0;
 				while (bufferToWrite[i] != 0) {
 					fout << bufferToWrite[i];

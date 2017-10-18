@@ -47,10 +47,10 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	nextSeq = (nextSeq ^ ack[2]) << 8;
 	nextSeq = (nextSeq ^ ack[3]) << 8;
 	nextSeq = (nextSeq ^ ack[4]);
-	if (nextSeq == packet.getFrameNumber() + 1 /*--> nextSeq == LAR + 1*/) {
+	if (nextSeq == LAR + 1 /*--> nextSeq == LAR + 1*/) {
 		std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
-		//--> offeredWindow = ack[5];
-		//--> LAR++;
+		offeredWindow = ack[5];
+		LAR = nextSeq;
 	} else {
 		std::cout << "Ack Number false!" << nextSeq << std::endl << std::endl;
 		return -2;
@@ -83,16 +83,16 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 	//Tambahan Variabel
 	offeredWindow = windowSize;
-	LAR = -1 //Last Acknowledgement received
+	LAR = -1; //Last Acknowledgement received
 	LFS = -1; //Last Frame Sent
 
-	while (windowPtr < windowPtr + windowSize /*--> offeredWindow*/ * payloadSize && windowPtr < dataLength) {
+	while (windowPtr < windowPtr + offeredWindow /*--> offeredWindow*/ * payloadSize && windowPtr < dataLength) {
 		std::cout << "[moveWindow] Window Pointer: " << windowPtr << " - " << windowPtr + windowSize * payloadSize << std::endl;
 		std::vector<std::future<int>> threadRes;
 		int tempWindowPtr = windowPtr;
 		int tempSequence = sequence;
 		int tempPackageCount = packageCount;
-		while (tempWindowPtr < windowPtr + windowSize /**--> offeredWindow*/ * payloadSize && windowPtr /*Harusnya tempwindow?*/ < dataLength) {
+		while (tempWindowPtr < windowPtr + offeredWindow /**--> offeredWindow*/ * payloadSize && tempWindowPtr /*Harusnya tempwindow?*/ < dataLength) {
 			if (tempSequence >= maxSequence) {
 				tempSequence = 0;
 			}
@@ -104,8 +104,8 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 				bufferPtr++;
 			}
 			std::cout << "[sendData] Isi paket: " << payload << std::endl;
-			threadRes.push_back(std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(sequence, payload))));
-			//--> LFS = tempWindowPtr;
+			threadRes.push_back(std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(tempSequence, payload))));
+			LFS = tempWindowPtr;
 			tempWindowPtr += payloadSize;
 			tempSequence++;
 			tempPackageCount++;

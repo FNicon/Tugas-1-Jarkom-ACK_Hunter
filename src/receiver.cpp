@@ -30,7 +30,6 @@ void sendAck(int sock, unsigned char* recvData, int maxSequence) {
 		exit(1);
 	}
 }
-
 // void writeToFile(char* bufferToWrite, std::ofstream targetFile, ) {
 // 	for (int i = 0; i < )
 // }
@@ -114,7 +113,8 @@ int main(int argc, char* argv[]) {
 		// std::cout << "RWS: " << maxSequence << std::endl;
 			sleep(1);
 		}
-
+		//char tempBuffer[bufferSize];
+		//char* tempBuffer = new char[bufferSize];
 		while (!finished) {
 			std::cout << "Waiting for data..." << std::endl;
 			fflush(stdout);
@@ -126,6 +126,7 @@ int main(int argc, char* argv[]) {
 				timeoutCount++;
 				continue;
 			} else {
+				int currentSeq;
 				printf("=============================\n");
 				printf("[main] Menerima paket dari %s:%d\n", inet_ntoa(otherAddr.sin_addr), ntohs(otherAddr.sin_port));
 				printf("[main] Data (hex): %x\n" ,recvData[6]);
@@ -134,16 +135,22 @@ int main(int argc, char* argv[]) {
 				printf ("[main] received package content (hex): %x %x %x %x %x %x %x %x %x\n", recvData[0], recvData[1], recvData[2], recvData[3], recvData[4], recvData[5], recvData[6], recvData[7], recvData[8]);
 				//usleep(20000);
 				randomSleep();
-
 				if (packetChecker.CheckSumValidation(recvData)) {
+					currentSeq = (currentSeq ^ recvData[1]) << 8;
+					currentSeq = (currentSeq ^ recvData[2]) << 8;
+					currentSeq = (currentSeq ^ recvData[3]) << 8;
+					currentSeq = (currentSeq ^ recvData[4]);
+					//tempBuffer[currentSeq] = recvData[6];
 					sendAck(mySocket, recvData, maxSequence);
-					bufferToWrite[bufferPtr] = recvData[6];
-					std::cout << "[bufferRead] buffer receiver : ";
-					for (int i = 0; i<=bufferPtr; i++) {
-						std::cout << bufferToWrite[i] << " ";
-					}
-					std::cout<<std::endl;
-					bufferPtr++;
+					//bufferToWrite[bufferPtr] = recvData[6];
+					//std::cout << "[bufferRead] buffer receiver : ";
+					//for (int i = 0; i<=bufferPtr; i++) {
+					//	std::cout << bufferToWrite[i] << " ";
+					//}
+					//std::cout<<std::endl;
+					//bufferPtr++;
+				} else {
+					std::cout << "[main] Received Package content was corrupt." << std::endl;
 				}
 
 				if (bufferPtr >= bufferSize) {

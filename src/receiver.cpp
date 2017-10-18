@@ -53,6 +53,10 @@ int main(int argc, char* argv[]) {
 		std::cout << "Usage : ./recvfile <file name> <window size> <buffer size> <port>" << std::endl;
 		return 0;
 	} else {
+		struct timeval timeoutVal;
+		timeoutVal.tv_sec = 2;
+		timeoutVal.tv_usec = 0;
+		int timeoutCount = 0;
 		char* fileName = argv[1];
 		const int windowSize = atoi(argv[2]);
 		const int bufferSize = atoi(argv[3]);
@@ -83,6 +87,11 @@ int main(int argc, char* argv[]) {
 			exit(1);
 		}
 
+		if (setsockopt(mySocket, SOL_SOCKET, SO_RCVTIMEO, &timeoutVal, sizeof(timeoutVal))<0) {
+			std::cout << "Failed to set timeout!" << std::endl;
+			return 0;
+		}
+
 		std::ofstream fout;
 		fout.open(fileName);
 
@@ -96,6 +105,8 @@ int main(int argc, char* argv[]) {
 		// }
 
 		while (!finished) {
+			if (timeoutCount >=5)
+				exit(1);
 			std::cout << "Waiting for data..." << std::endl;
 			fflush(stdout);
 
@@ -103,7 +114,8 @@ int main(int argc, char* argv[]) {
 
 			if ((recvfrom(mySocket, recvData, bufferSize, 0, (struct sockaddr *) &otherAddr, &slen)) == -1) {
 				std::cout << "Failed to receive data" << std::endl;
-				exit(1);
+				timeoutCount++;
+				continue;
 			}
 
 			printf("=============================\n");

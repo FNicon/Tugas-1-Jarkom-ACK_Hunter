@@ -50,7 +50,7 @@ int handshake(int thisSocket, const int* RWS) {
 		succesSentHandshake = true;
 	}
 
-	return (SWS + *RWS + 1);
+	return (SWS + *RWS);
 }
 void randomSleep() {
 	int randomTime;
@@ -118,6 +118,7 @@ int main(int argc, char* argv[]) {
 			tempBuffer[initCount] = 0;
 		}
 		int counterReceived = 0;
+		int tempCounter = 0;
 		while (!finished) {
 			std::cout << "Waiting for data..." << std::endl;
 			fflush(stdout);
@@ -143,8 +144,14 @@ int main(int argc, char* argv[]) {
 					currentSeq = (currentSeq ^ recvData[2]) << 8;
 					currentSeq = (currentSeq ^ recvData[3]) << 8;
 					currentSeq = (currentSeq ^ recvData[4]);
-					tempBuffer[currentSeq] = recvData[6];
+					if (currentSeq >= windowSize) {
+						tempCounter = currentSeq - windowSize; 
+					} else {
+						tempCounter = currentSeq;
+					}
+					tempBuffer[tempCounter] = recvData[6];
 					counterReceived = counterReceived + 1;
+					printf("%d, Data Kirim : %c\n",currentSeq, recvData[6]);
 					sendAck(mySocket, recvData, maxSequence);
 					//bufferToWrite[bufferPtr] = recvData[6];
 					//std::cout << "[bufferRead] buffer receiver : ";
@@ -156,14 +163,15 @@ int main(int argc, char* argv[]) {
 				} else {
 					std::cout << "[main] Received Package content was corrupt." << std::endl;
 				}
-				//printf("pointer %d\n",bufferPtr);
-				//printf("=============counter : %d\n",counterReceived);
 				if (counterReceived >= windowSize) {
-					for (int j=bufferPtr;j<=bufferPtr+counterReceived;j++) {
-						bufferToWrite[j] = tempBuffer[j];
+					printf("pointer %d\n",bufferPtr);
+					printf("=============counter : %d\n",counterReceived);
+					for (int j=bufferPtr;j<bufferPtr+counterReceived;j++) {
+						printf("%c ITERASI : %d\n",tempBuffer[j-bufferPtr], j-bufferPtr);
+						bufferToWrite[j] = tempBuffer[j-bufferPtr];
 					}
 					std::cout << "[bufferRead] buffer receiver : ";
-					for (int i = 0; i<=bufferPtr; i++) {
+					for (int i = 0; i<bufferPtr+counterReceived; i++) {
 						std::cout << bufferToWrite[i] << " ";
 					}
 					std::cout<<std::endl;

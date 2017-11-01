@@ -49,8 +49,8 @@ int sendSinglePacket(int thisSocket, Packet packet) {
 	nextSeq = (nextSeq ^ ack[4]);
 	if (nextSeq == packet.getFrameNumber() + 1 /*--> nextSeq == LAR + 1*/) {
 		std::cout << "[sendSinglePacket] Next sequence: " << nextSeq << std::endl << std::endl;
-		offeredWindow = ack[5];
-		LAR = nextSeq;
+		//offeredWindow = ack[5];
+		//LAR = nextSeq;
 	} else {
 		std::cout << "Ack Number false!" << nextSeq << std::endl << std::endl;
 		return -2;
@@ -67,7 +67,7 @@ int handshake(int thisSocket, const int* SWS) {
 	if (recvfrom(thisSocket, &RWS, sizeof(RWS), 0, (struct sockaddr *) &otherAddress, &slen) == -1){
 		std::cout << "Failed to receive handshake reply" << std::endl;
 	}
-	return (*SWS + RWS + 1);
+	return (*SWS + RWS);
 }
 void sendData(int thisSocket, char* data, int dataLength, int windowSize, int payloadSize, int maxSequence) {
 	bool acked = false;
@@ -82,7 +82,7 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 
 
 	//Tambahan Variabel
-	offeredWindow = windowSize;
+	//offeredWindow = windowSize;
 	LAR = -1; //Last Acknowledgement received
 	LFS = -1; //Last Frame Sent
 
@@ -104,6 +104,7 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 				bufferPtr++;
 			}
 			std::cout << "[sendData] Isi paket: " << payload << std::endl;
+			printf("DATA %x\n",payload[0]);
 			threadRes.push_back(std::async(std::launch::async,sendSinglePacket,thisSocket, *(new Packet(tempSequence, payload))));
 			LFS = tempWindowPtr;
 			tempWindowPtr += payloadSize;
@@ -144,6 +145,9 @@ void sendData(int thisSocket, char* data, int dataLength, int windowSize, int pa
 			packageCount++;
 		}*/
 	}
+	printf("windowPTRLAST, %d",windowPtr);
+	printf("windowPTRLAST, %d",dataLength);
+
 
 }
 int main(int argc, char* argv[]) {

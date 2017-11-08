@@ -166,7 +166,9 @@ int main(int argc, char* argv[]) {
 				if (counterReceived >= windowSize) {
 					printf("pointer %d\n",bufferPtr);
 					printf("=============counter : %d\n",counterReceived);
-					for (int j=bufferPtr;j<bufferPtr+counterReceived;j++) {
+					int copyCount;
+					copyCount = bufferPtr+counterReceived;
+					for (int j=bufferPtr;j<copyCount;j++) {
 						printf("%c ITERASI : %d\n",tempBuffer[j-bufferPtr], j-bufferPtr);
 						bufferToWrite[j] = tempBuffer[j-bufferPtr];
 					}
@@ -190,6 +192,21 @@ int main(int argc, char* argv[]) {
 				}
 			}
 			if (finished) {
+				printf("pointer %d\n",bufferPtr);
+				printf("=============counter : %d\n",counterReceived);
+				int copyCount;
+				copyCount = bufferPtr+counterReceived;
+				for (int j=bufferPtr;j<copyCount;j++) {
+					printf("%c ITERASI : %d\n",tempBuffer[j-bufferPtr], j-bufferPtr);
+					bufferToWrite[j] = tempBuffer[j-bufferPtr];
+				}
+				std::cout << "[bufferRead] buffer receiver : ";
+				for (int i = 0; i<bufferPtr+counterReceived; i++) {
+					std::cout << bufferToWrite[i] << " ";
+				}
+				std::cout<<std::endl;
+				bufferPtr=bufferPtr+counterReceived;
+				counterReceived = 0;
 				int i = 0;
 				std::cout << "[bufferWrite] buffer to Write : ";
 				while (bufferToWrite[i] != 0) {
